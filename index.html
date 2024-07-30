@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GAPy</title>
+  <style>
+    body {
+      /* background-color: rgb(52, 54, 54); */
+    }
+    div {
+      border: 1px solid black;
+      border-radius: 5px;
+      padding: 5px;
+      margin:5px
+    }
+    #center{
+      display: flex;
+      flex-direction: column;
+      background-color: darkgray;
+    }
+    #sub1, #sub2 {
+      background-color: white;
+      display: flex;
+      width: 97%;  
+      height: 250px;
+      gap: 2;
+    }
+    #sub1{
+      flex-grow: 3;
+    }
+    #sub2{
+      flex-grow: 2;
+    }
+    #actions {
+      width:100px
+    }
+    #class {
+      flex-grow: 2;
+    }
+    #objects {
+      flex-grow: 3;
+    }
+    #other {
+      flex-grow: 2;
+    }
+  </style>
+</head>
+<body>
+  <div id="center">
+    GAPy
+    <div id="sub1">
+      <div id="actions">
+        <button id="newClass">Nova classe...</button>
+      </div>
+      <div id="class">Classes</div>
+    </div>
+    <div id="sub2">
+      <div id="objects">Objetos</div>
+      <div id="other">Outro</div>
+    </div>
+  </div>
+  <script>
+    const divCenter = document.getElementById("center")
+    const divSub1 = document.getElementById("sub1")
+    const divSub2 = document.getElementById("sub2")
+    const divActions = document.getElementById("actions")
+    const divObjects = document.getElementById("objects")
+    const divOther = document.getElementById("other")
+    const buttonNewClass = document.getElementById("newClass")
+    
+    const acaoClickBotaoNovaClasse = function(ev){
+      alert("botão clicado")
+    }
+
+    buttonNewClass.addEventListener("click",acaoClickBotaoNovaClasse)
+  </script>
+</body>
+</html>
