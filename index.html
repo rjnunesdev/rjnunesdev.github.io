@@ -3,53 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
   <title>GAPy</title>
-  <style>
-    body {
-      /* background-color: rgb(52, 54, 54); */
-      margin: 0;
-      padding: 0;
-      height: 100vh;
-    }
-    div {
-      border: 1px solid black;
-      border-radius: 5px;
-    }
-    #center{
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      border: none;
-    }
-    #sub1, #sub2 {
-      display: flex;
-      margin: 5px;
-    }
-    #sub1 > div , #sub2 > div {
-      display: flex;
-      margin: 5px;
-    }
-    #sub1{
-      flex-grow: 3;
-    }
-    #sub2{
-      flex-grow: 2;
-    }
-    #actions {
-      min-width: 100px;
-      align-items: flex-start;
-      flex-grow: 1;
-    }
-    #class {
-      flex-grow: 6;
-    }
-    #objects {
-      flex-grow: 3;
-    }
-    #other {
-      flex-grow: 2;
-    }
-  </style>
 </head>
 <body>
   <div id="center">
@@ -62,8 +17,18 @@
     </div>
     <div id="sub2">
       <div id="objects">Objetos</div>
-      <div id="other">Outro</div>
+      <div id="other">Saída</div>
     </div>
+    <a style="text-align: end; text-decoration: none;" href="https://github.com/rjnunesdev/rjnunesdev.github.io">Link Repositorio</a>
+  </div>
+  <div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <p>Some text in the Modal..</p>
+    </div>
+  
   </div>
   <script>
     const divCenter = document.getElementById("center")
@@ -74,11 +39,34 @@
     const divOther = document.getElementById("other")
     const buttonNewClass = document.getElementById("newClass")
     
-    const acaoClickBotaoNovaClasse = function(ev){
-      alert("botão clicado")
+    // const acaoClickBotaoNovaClasse = function(ev){
+    //   alert("botão clicado")
+    // }
+
+    // buttonNewClass.addEventListener("click",acaoClickBotaoNovaClasse)
+  </script>
+  <!-- MODAL -->
+  <script>
+    var modal = document.getElementById("myModal");
+    var btnNewClass = document.getElementById("newClass");
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks the button, open the modal 
+    btnNewClass.onclick = function() {
+      modal.style.display = "block";
     }
 
-    buttonNewClass.addEventListener("click",acaoClickBotaoNovaClasse)
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
   </script>
 </body>
 </html>
