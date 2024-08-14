@@ -60,19 +60,21 @@ background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 
 /* Modal Content */
 .modal-content {
-background-color: #fefefe;
-margin: auto;
-padding: 20px;
-border: 1px solid #888;
-width: 80%;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
 }
 
 /* The Close Button */
 .close {
-color: #aaaaaa;
-float: right;
-font-size: 28px;
-font-weight: bold;
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  margin-top: -20px;
+  margin-right: -12px;
 }
 
 .close:hover,
