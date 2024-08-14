@@ -26,11 +26,16 @@
     <!-- Modal content -->
     <div class="modal-content">
       <span class="close">&times;</span>
-      <p>Some text in the Modal..</p>
+      <div style="padding: 10px; margin: 10px;">
+        <label for="nomeClasse">Nome da classe</label>
+        <input type="text" id="nomeClasse" name="nomeClasse">
+      </div>
+      <button style="align-items: end;" type="button" id="criarClasse">Criar classe</button>
     </div>
   
   </div>
   <script>
+    var classes = []
     const divCenter = document.getElementById("center")
     const divSub1 = document.getElementById("sub1")
     const divSub2 = document.getElementById("sub2")
@@ -38,7 +43,18 @@
     const divObjects = document.getElementById("objects")
     const divOther = document.getElementById("other")
     const buttonNewClass = document.getElementById("newClass")
+    const buttonCriarClasse = document.getElementById("criarClasse")
     
+    const criarClasse = function(ev) {
+      classes.push({
+        nome: document.getElementById("nomeClasse").value,
+        atributos:[],
+        metodos:[]
+      })
+      console.log(classes)
+      document.getElementsByClassName("close")[0].click()
+    }
+    buttonCriarClasse.addEventListener("click", criarClasse)
     // const acaoClickBotaoNovaClasse = function(ev){
     //   alert("botão clicado")
     // }
