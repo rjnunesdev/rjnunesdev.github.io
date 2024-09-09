@@ -21,63 +21,121 @@
     </div>
     <a style="text-align: end; text-decoration: none;" href="https://github.com/rjnunesdev/rjnunesdev.github.io">Link Repositorio</a>
   </div>
-  <div id="myModal" class="modal">
 
-    <!-- Modal content -->
+  <!-- Modal para criação de nova classe -->
+  <div id="myModal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
-      <div style="padding: 10px; margin: 10px;">
-        <label for="nomeClasse">Nome da classe</label>
-        <input type="text" id="nomeClasse" name="nomeClasse">
+      <div style="padding: 10px; border: none;">
+        <label for="nomeClasse" style="font-size: 20px;line-height: 1.5;">Nome</label>
+        <input type="text" style="width: 100%;font-size: 20px;line-height: 1.5;" id="nomeClasse" name="nomeClasse">
       </div>
-      <button style="align-items: end;" type="button" id="criarClasse">Criar classe</button>
+      <div style="padding: 10px; border: none;">
+        <label for="nome-atributos" style="font-size: 20px;line-height: 1.5;">Atributos</label>
+        <input type="text" style="width: 100%;font-size: 20px;line-height: 1.5;" id="nome-atributos" name="nome-atributos" placeholder="Exemplo: nome: string; idade: int">
+      </div>
+      <button style="margin:10px; padding: 10px; font-size: 20px;line-height: 1.5;" type="button" id="criarClasse">Criar classe</button>
     </div>
-  
   </div>
-  <script>
-    var classes = []
-    const divCenter = document.getElementById("center")
-    const divSub1 = document.getElementById("sub1")
-    const divSub2 = document.getElementById("sub2")
-    const divActions = document.getElementById("actions")
-    const divObjects = document.getElementById("objects")
-    const divOther = document.getElementById("other")
-    const buttonNewClass = document.getElementById("newClass")
-    const buttonCriarClasse = document.getElementById("criarClasse")
-    
-    const criarClasse = function(ev) {
-      classes.push({
-        nome: document.getElementById("nomeClasse").value,
-        atributos:[],
-        metodos:[]
-      })
-      console.log(classes)
-      document.getElementsByClassName("close")[0].click()
-    }
-    buttonCriarClasse.addEventListener("click", criarClasse)
-    // const acaoClickBotaoNovaClasse = function(ev){
-    //   alert("botão clicado")
-    // }
 
-    // buttonNewClass.addEventListener("click",acaoClickBotaoNovaClasse)
-  </script>
-  <!-- MODAL -->
   <script>
+    // Array para armazenar as classes
+    var classes = [];
+
+    // Elementos do DOM
+    const buttonCriarClasse = document.getElementById("criarClasse");
+    const buttonNewClass = document.getElementById("newClass");
+    const divClasses = document.getElementById("class");
+    const divSaida = document.getElementById("other");
+
+    // Função para criar a nova classe
+    const criarClasse = function() {
+      const nomeClasse = document.getElementById("nomeClasse").value;
+      const atributosClasse = document.getElementById("nome-atributos").value;
+
+      if (nomeClasse !== "") {
+        // Adicionar a nova classe ao array
+        const novaClasse = {
+          nome: nomeClasse,
+          atributos: atributosClasse.split(";").map(attr => attr.trim()) // Converte os atributos para array
+        };
+        classes.push(novaClasse);
+
+        // Atualizar a exibição das classes
+        atualizarClasses();
+
+        // Gerar o código Python e exibi-lo
+        exibirCodigoPython(novaClasse);
+
+        // Fechar o modal
+        document.getElementsByClassName("close")[0].click();
+      } else {
+        alert("O nome da classe é obrigatório.");
+      }
+    };
+
+    // Função para atualizar a lista de classes
+    const atualizarClasses = function() {
+      divClasses.innerHTML = "<h3>Classes</h3>"; // Título de Classes
+      classes.forEach(classe => {
+        // Criação do elemento de classe
+        const classDiv = document.createElement("div");
+        classDiv.style.margin = "10px 0";
+        classDiv.style.border = "1px solid #ccc";
+        classDiv.style.padding = "10px";
+        classDiv.style.borderRadius = "5px";
+        classDiv.style.backgroundColor = "#f9f9f9";
+
+        // Nome da Classe
+        const classTitle = document.createElement("h4");
+        classTitle.textContent = `Classe: ${classe.nome}`;
+        classDiv.appendChild(classTitle);
+
+        // Lista de Atributos
+        const attrList = document.createElement("p");
+        attrList.textContent = `Atributos: ${classe.atributos.join(", ")}`;
+        classDiv.appendChild(attrList);
+
+        // Adicionar a classe criada ao container
+        divClasses.appendChild(classDiv);
+      });
+    };
+
+    // Função para gerar o código Python correspondente e exibi-lo
+    const exibirCodigoPython = function(novaClasse) {
+      
+      let classesFormatadas = classes.map(classe=>{
+        let codigo = `class ${classe.nome}:\n`;
+        codigo += `    def __init__(self, ${classe.atributos.map(attr => attr.split(":")[0]).join(", ")}):\n`;
+
+        classe.atributos.forEach(atributo => {
+          const [nomeAtributo] = atributo.split(":");
+          codigo += `        self.${nomeAtributo} = ${nomeAtributo}\n`;
+        });
+        return codigo;
+      }).join("\n")
+
+      divSaida.innerHTML = `<pre>${classesFormatadas}</pre>`
+
+      // Exibir o código gerado na área de "Saída"
+      // divSaida.innerHTML = `<pre>${codigo}</pre>`;
+    };
+
+    // Event listeners
+    buttonCriarClasse.addEventListener("click", criarClasse);
+
+    // Modal
     var modal = document.getElementById("myModal");
-    var btnNewClass = document.getElementById("newClass");
     var span = document.getElementsByClassName("close")[0];
 
-    // When the user clicks the button, open the modal 
-    btnNewClass.onclick = function() {
+    buttonNewClass.onclick = function() {
       modal.style.display = "block";
     }
 
-    // When the user clicks on <span> (x), close the modal
     span.onclick = function() {
       modal.style.display = "none";
     }
 
-    // When the user clicks anywhere outside of the modal, close it
     window.onclick = function(event) {
       if (event.target == modal) {
         modal.style.display = "none";
