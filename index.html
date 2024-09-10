@@ -8,27 +8,30 @@
 </head>
 <body>
   <div id="center">
-    GAPy
+    <label for="sub1" style="font-weight:800; padding: 10px; font-size: 30px;width: fit-content; right: 50%; left: 50%; position: relative;">GAPy</label>
     <div id="sub1">
-      <div id="actions">
-        <button id="newClass" style="flex-grow: no-grow;">Nova classe...</button>
+      <div id="acoes">
+        <h3>Açoes</h3>
+        <button id="botao-nova-classe" style="flex-grow: no-grow;">Nova classe...</button>
       </div>
-      <div id="class">Classes</div>
+      <div id="classes">
+        <h3>Classes</h3>
+      </div>
     </div>
     <div id="sub2">
-      <div id="objects">Objetos</div>
-      <div id="other">Saída</div>
+      <div id="objetos"><h3>Objetos</h3></div>
+      <div id="saida"><h3>Saída</h3></div>
     </div>
     <a style="text-align: end; text-decoration: none;" href="https://github.com/rjnunesdev/rjnunesdev.github.io">Link Repositorio</a>
   </div>
 
   <!-- Modal para criação de nova classe -->
-  <div id="myModal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
+  <div id="modal-classe" class="modal">
+    <div class="modal-conteudo">
+      <span class="botao-fechar">&times;</span>
       <div style="padding: 10px; border: none;">
-        <label for="nomeClasse" style="font-size: 20px;line-height: 1.5;">Nome</label>
-        <input type="text" style="width: 100%;font-size: 20px;line-height: 1.5;" id="nomeClasse" name="nomeClasse">
+        <label for="nome-classe" style="font-size: 20px;line-height: 1.5;">Nome</label>
+        <input type="text" style="width: 100%;font-size: 20px;line-height: 1.5;" id="nome-classe" name="nome-classe">
       </div>
       <div style="padding: 10px; border: none;">
         <label for="nome-atributos" style="font-size: 20px;line-height: 1.5;">Atributos</label>
@@ -44,42 +47,49 @@
 
     // Elementos do DOM
     const buttonCriarClasse = document.getElementById("criarClasse");
-    const buttonNewClass = document.getElementById("newClass");
-    const divClasses = document.getElementById("class");
-    const divSaida = document.getElementById("other");
+    const buttonNewClass = document.getElementById("botao-nova-classe");
+    const divClasses = document.getElementById("classes");
+    const divSaida = document.getElementById("saida");
 
     // Função para criar a nova classe
     const criarClasse = function() {
-      const nomeClasse = document.getElementById("nomeClasse").value;
+      const labelNomeClasse = document.getElementById("nome-classe").value;
       const atributosClasse = document.getElementById("nome-atributos").value;
 
-      if (nomeClasse !== "") {
+      if (labelNomeClasse === "") {
+        alert("O nome da classe é obrigatório.");
+      } else if (classes.some(el => el.nome.toLowerCase() === labelNomeClasse.toLowerCase())) {
+        alert("O nome da nova classe ja existente.");
+      } else {
         // Adicionar a nova classe ao array
         const novaClasse = {
-          nome: nomeClasse,
+          nome: labelNomeClasse,
           atributos: atributosClasse.split(";").map(attr => attr.trim()) // Converte os atributos para array
         };
         classes.push(novaClasse);
 
-        // Atualizar a exibição das classes
+        // Atualizar a exibição das classeses
         atualizarClasses();
 
         // Gerar o código Python e exibi-lo
         exibirCodigoPython(novaClasse);
 
         // Fechar o modal
-        document.getElementsByClassName("close")[0].click();
-      } else {
-        alert("O nome da classe é obrigatório.");
+        document.getElementById("nome-classe").value = "";
+        document.getElementById("nome-atributos").value = "";
+        document.getElementsByClassName("botao-fechar")[0].click();
       }
     };
 
     // Função para atualizar a lista de classes
     const atualizarClasses = function() {
-      divClasses.innerHTML = "<h3>Classes</h3>"; // Título de Classes
+      divClasses.innerHTML = '<h3>Classes</h3>'; 
+      // Título de Classes
       classes.forEach(classe => {
         // Criação do elemento de classe
         const classDiv = document.createElement("div");
+        classDiv.className = "classe"
+        classDiv.id =`classe-${classe.nome.toLowerCase()}`
         classDiv.style.margin = "10px 0";
         classDiv.style.border = "1px solid #ccc";
         classDiv.style.padding = "10px";
@@ -101,7 +111,7 @@
       });
     };
 
-    // Função para gerar o código Python correspondente e exibi-lo
+    // Função para gerar o código /Python correspondente e exibi-lo
     const exibirCodigoPython = function(novaClasse) {
       
       let classesFormatadas = classes.map(classe=>{
@@ -115,20 +125,18 @@
         return codigo;
       }).join("\n")
 
-      divSaida.innerHTML = `<pre>${classesFormatadas}</pre>`
-
-      // Exibir o código gerado na área de "Saída"
-      // divSaida.innerHTML = `<pre>${codigo}</pre>`;
+      divSaida.innerHTML = `<h3>Saída</h3><pre>${classesFormatadas}</pre>`
     };
 
     // Event listeners
     buttonCriarClasse.addEventListener("click", criarClasse);
 
     // Modal
-    var modal = document.getElementById("myModal");
-    var span = document.getElementsByClassName("close")[0];
+    var modal = document.getElementById("modal-classe");
+    var span = document.getElementsByClassName("botao-fechar")[0];
 
     buttonNewClass.onclick = function() {
+      document.getElementById("nome-classe").click()
       modal.style.display = "block";
     }
 

@@ -12,15 +12,19 @@ div {
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding-inline:10px ;
   border: none;
 }
 #sub1, #sub2 {
   display: flex;
-  margin: 5px;
+  /* margin: 5px; */
+  border: none;
 }
 #sub1 > div , #sub2 > div {
   display: flex;
   margin: 5px;
+  padding: 15px;
+  flex-direction: column;
 }
 #sub1{
   flex-grow: 3;
@@ -28,22 +32,31 @@ div {
 #sub2{
   flex-grow: 2;
 }
-#actions {
+#acoes {
   min-width: 100px;
   align-items: flex-start;
   flex-grow: 1;
 }
-#class {
-  flex-grow: 6;
+h3{
+  margin-block-start: 0 ;
+  margin-block-end: 5px;
 }
-#objects {
+#classes {
+  flex-grow: 6;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+}
+.classe{
+  height: fit-content;
+  width: fit-content;
+}
+#objetos {
   flex-grow: 3;
 }
-#other {
+#saida {
   flex-grow: 2;
 }
 
-/* The Modal (background) */
 .modal {
 display: none; /* Hidden by default */
 position: fixed; /* Stay in place */
@@ -59,7 +72,7 @@ background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
 /* Modal Content */
-.modal-content {
+.modal-conteudo {
   background-color: #fefefe;
   margin: auto;
   padding: 20px;
@@ -67,8 +80,7 @@ background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
   width: 80%;
 }
 
-/* The Close Button */
-.close, .closeObjeto {
+.botao-fechar {
   color: #aaaaaa;
   float: right;
   font-size: 28px;
@@ -77,10 +89,8 @@ background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
   margin-right: -12px;
 }
 
-.close:hover,
-.close:focus,
-.closeObjeto:hover, 
-.closeObjeto:focus{
+.botao-fechar:hover,
+.botao-fechar:focus{
   color: #000;
   text-decoration: none;
   cursor: pointer;
