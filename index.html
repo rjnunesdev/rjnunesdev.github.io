@@ -119,8 +119,8 @@
 
       if (nomeClasse === "") {
         alert("O nome da classe é obrigatório.");
-      // } else if (classes.some(el => el.nome.toLowerCase() === nomeClasse.toLowerCase())) {
-      //   alert("O nome da nova classe ja existente.");
+      } else if (classes.some(el => el.nome.toLowerCase() === nomeClasse.toLowerCase())) {
+        alert("O nome da nova classe ja existente.");
       } else if (nomeClasse.charAt(0) !== nomeClasse.toUpperCase().charAt(0)) {
         alert("O nome da nova classe deve iniciar com letra maiúscula.");
       } else {
@@ -138,8 +138,8 @@
         exibirCodigoPython();
 
         // Fechar o modal
-        // document.getElementById("nome-classe").value = "";
-        // document.getElementById("nome-atributos").value = "";
+        document.getElementById("nome-classe").value = "";
+        document.getElementById("nome-atributos").value = "";
         document.getElementsByClassName("botao-fechar")[0].click();
       }
     };
