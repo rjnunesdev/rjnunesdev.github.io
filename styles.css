@@ -17,7 +17,6 @@ div {
 }
 #sub1, #sub2 {
   display: flex;
-  /* margin: 5px; */
   border: none;
 }
 #sub1 > div , #sub2 > div {
@@ -32,6 +31,15 @@ div {
 #sub2{
   flex-grow: 2;
 }
+#titutlo{
+  font-weight: 800; 
+  padding: 10px; 
+  font-size: 30px;
+  width: fit-content; 
+  right: 50%; 
+  left: 50%; 
+  position: relative;
+}
 #acoes {
   min-width: 100px;
   align-items: flex-start;
@@ -39,6 +47,13 @@ div {
 h3{
   margin-block-start: 0 ;
   margin-block-end: 5px;
+}
+a{
+  text-align: end; 
+  text-decoration: none;
+}
+#botao-nova-classe{
+  flex-grow: no-grow;
 }
 #classes {
   flex-grow: 6;
