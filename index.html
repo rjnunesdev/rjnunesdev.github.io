@@ -72,7 +72,7 @@
       loadPyodide().then(pyodide => {
         let avaliacao = ''
         try{
-          avaliacao = pyodide.runPython(codigoFonte+"$")
+          avaliacao = pyodide.runPython(codigoFonte)
           saida = "Código compilado com sucesso"
         } catch(erro) {
           if (erro.name ===  "PythonError") {
@@ -126,7 +126,7 @@
       } else {
         const novaClasse = {
           nome: nomeClasse,
-          atributos: atributosClasse.split(";").map(attr => attr.trim()) // Converte os atributos para array
+          atributos: atributosClasse === "" ? [] : atributosClasse.split(";").map(attr => attr.trim()) // Converte os atributos para array
         };
         // Adicionar a nova classe ao array
         classes.push(novaClasse);
@@ -170,12 +170,17 @@
 
     const gerarCodigoFonteClasse = function(classe) {
       const gerarConstrutorClasse = function(atributos) {
-        let codigo = `    def __init__(self, ${classe.atributos.map(attr => attr.split(":")[0]).join(", ")}):\n`;
+        let codigo = '    ';
+        if (atributos.length > 0) {
+          codigo += `def __init__(self, ${atributos.map(attr => attr.split(":")[0]).join(", ")}):\n`;
 
-        classe.atributos.forEach(atributo => {
-          const [nomeAtributo] = atributo.split(":");
-          codigo += `        self.${nomeAtributo} = ${nomeAtributo}\n`;
-        });
+          atributos.forEach(atributo => {
+            const [nomeAtributo] = atributo.split(":");
+            codigo += `        self.${nomeAtributo} = ${nomeAtributo}\n`;
+          })
+        } else {
+          codigo += 'pass';
+        }
         return codigo;
       }
       
