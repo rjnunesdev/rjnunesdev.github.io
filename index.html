@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -13,14 +13,12 @@
     <label for="sub1" id="titulo">GAPy</label>
     <div id="sub1">
       <div id="acoes">
-        <h3>Açoes</h3>
+        <h3>Ações</h3>
         <button id="botao-nova-classe">Nova classe...</button>
       </div>
       <div id="classes">
         <h3>Classes</h3>
-        <div id="container-classes">
-
-        </div>
+        <div id="container-classes"></div>
       </div>
       <div id="codigo">
         <h3>Código</h3>
@@ -30,9 +28,7 @@
     <div id="sub2">
       <div id="objetos">
         <h3>Objetos</h3>
-        <div id="objetos-container">
-
-        </div>
+        <div id="objetos-container"></div>
       </div>
       <div id="saida">
         <h3>Saída</h3>
@@ -58,27 +54,58 @@
     </div>
   </div>
 
-  <script>
-    // Array para armazenar as classes
-    var classes = [];
+  <!-- Modal para criação de objeto -->
+  <div id="modal-objeto" class="modal">
+    <div class="modal-conteudo">
+      <span class="botao-fechar">&times;</span>
+      <div>
+        <label for="nome-objeto">Nome do objeto</label>
+        <input type="text" id="nome-objeto" name="nome-objeto">
+      </div>
+      <div id="atributos-objeto">
+        <!-- Campos para definir valores dos atributos serão adicionados dinamicamente aqui -->
+      </div>
+      <button type="button" id="botao-criar-objeto">Criar objeto</button>
+    </div>
+  </div>
 
-    let saida = ''
-    let codigoFonte = ''
-    let estaCompilando = false
+  <!-- Modal para edição de objeto -->
+  <div id="modal-editar-objeto" class="modal">
+    <div class="modal-conteudo">
+      <span class="botao-fechar">&times;</span>
+      <div>
+        <label for="nome-editar-objeto">Nome do objeto</label>
+        <input type="text" id="nome-editar-objeto" name="nome-editar-objeto" disabled>
+      </div>
+      <div id="editar-atributos-objeto">
+        <!-- Campos para editar valores dos atributos serão adicionados dinamicamente aqui -->
+      </div>
+      <button type="button" id="botao-salvar-edicoes">Salvar</button>
+    </div>
+  </div>
+
+  <script>
+    var classes = [];
+    var objetos = [];
+    var objetoAtual = null;  // Objeto que está sendo editado atualmente
+
+    let saida = '';
+    let codigoFonte = '';
+    let estaCompilando = false;
+    let classeAtual = null;
 
     const compilarComPyodide = () => {
-      estaCompilando = true
-      divSaida.innerHTML = `<h3>Saída</h3><pre>Compilando...</pre>`
+      estaCompilando = true;
+      divSaida.innerHTML = `<h3>Saída</h3><pre>Compilando...</pre>`;
       loadPyodide().then(pyodide => {
-        let avaliacao = ''
-        try{
-          avaliacao = pyodide.runPython(codigoFonte)
-          saida = "Código compilado com sucesso"
-        } catch(erro) {
-          if (erro.name ===  "PythonError") {
-            saida = erro
-
-            let type = erro.type
+        let avaliacao = '';
+        try {
+          avaliacao = pyodide.runPython(codigoFonte);
+          saida = "Código compilado com sucesso";
+        } catch (erro) {
+          if (erro.name === "PythonError") {
+            saida = erro;
+            let type = erro.type;
             switch (type) {
               case "SyntaxError":
                 avaliacao = "Erro de sintaxe";
@@ -98,21 +125,24 @@
             }
           }
         } finally {
-          estaCompilando = false
-          divSaida.innerHTML = `<h3>Saída ${avaliacao !== '' ? "(" + avaliacao + ")":''}</h3><pre>${saida}</pre>`
+          estaCompilando = false;
+          divSaida.innerHTML = `<h3>Saída ${avaliacao && avaliacao !== '' ? "(" + avaliacao + ")" : ''}</h3><pre>${saida}</pre>`;
         }
       });
-    }
-    
+    };
+
     // Elementos do DOM
     const buttonCriarClasse = document.getElementById("botao-criar-classe");
     const buttonNovaClasse = document.getElementById("botao-nova-classe");
-    const divClasses = document.getElementById("classes");
     const divContainerClasses = document.getElementById("container-classes");
+    const divObjetosContainer = document.getElementById("objetos-container");
     const divSaida = document.getElementById("saida");
     const divCodigo = document.getElementById("codigo");
+    const modalObjeto = document.getElementById("modal-objeto");
+    const modalEditarObjeto = document.getElementById("modal-editar-objeto");
+    const atributosObjeto = document.getElementById("atributos-objeto");
+    const editarAtributosObjeto = document.getElementById("editar-atributos-objeto");
 
-    // Função para criar a nova classe
     const criarClasse = function() {
       const nomeClasse = document.getElementById("nome-classe").value;
       const atributosClasse = document.getElementById("nome-atributos").value;
@@ -120,52 +150,50 @@
       if (nomeClasse === "") {
         alert("O nome da classe é obrigatório.");
       } else if (classes.some(el => el.nome.toLowerCase() === nomeClasse.toLowerCase())) {
-        alert("O nome da nova classe ja existente.");
+        alert("O nome da nova classe já existe.");
       } else if (nomeClasse.charAt(0) !== nomeClasse.toUpperCase().charAt(0)) {
         alert("O nome da nova classe deve iniciar com letra maiúscula.");
       } else {
         const novaClasse = {
           nome: nomeClasse,
-          atributos: atributosClasse === "" ? [] : atributosClasse.split(";").map(attr => attr.trim()) // Converte os atributos para array
+          atributos: atributosClasse === "" ? [] : atributosClasse.split(";").map(attr => attr.trim())
         };
-        // Adicionar a nova classe ao array
         classes.push(novaClasse);
-
-        // Atualizar a exibição das classes
         atualizarListaClasses();
-
-        // Gerar o código Python e exibi-lo
         exibirCodigoPython();
-
-        // Fechar o modal
         document.getElementById("nome-classe").value = "";
         document.getElementById("nome-atributos").value = "";
         document.getElementsByClassName("botao-fechar")[0].click();
       }
     };
 
-    // Função para atualizar a lista de classes
     const atualizarListaClasses = function() {
       const gerarDivClasse = function(classe) {
         const divClasse = document.createElement("div");
-        divClasse.className = "classe"
-        divClasse.id =`classe-${classe.nome.toLowerCase()}`
+        divClasse.className = "classe";
+        divClasse.id = `classe-${classe.nome.toLowerCase()}`;
 
-        // Nome da Classe
         const tagNomeClasse = document.createElement("h4");
         tagNomeClasse.textContent = `Classe: ${classe.nome}`;
         divClasse.appendChild(tagNomeClasse);
 
-        // Lista de Atributos
-        const tagListaAtributos = document.createElement("p");
-        tagListaAtributos.textContent = `Atributos: ${classe.atributos.join(", ")}`;
+        const tagListaAtributos = document.createElement("pre");
+        tagListaAtributos.textContent = `Atributos:\n  ${classe.atributos.join("\n  ")}`;
         divClasse.appendChild(tagListaAtributos);
 
-        return divClasse        
-      }      
-      
-      divContainerClasses.innerHTML = ''
-      classes.forEach(classe => { divContainerClasses.appendChild( gerarDivClasse(classe) ) }); // Criação do elemento de classe
+        const tagBotaoCriarObjeto = document.createElement("button");
+        tagBotaoCriarObjeto.textContent = 'Criar objeto...';
+        tagBotaoCriarObjeto.id = `criar-objeto-${classe.nome.toLowerCase()}`;
+        tagBotaoCriarObjeto.addEventListener("click", () => abrirModalCriarObjeto(classe));
+        divClasse.appendChild(tagBotaoCriarObjeto);
+
+        return divClasse;
+      };
+
+      divContainerClasses.innerHTML = '';
+      classes.forEach(classe => {
+        divContainerClasses.appendChild(gerarDivClasse(classe));
+      });
     };
 
     const gerarCodigoFonteClasse = function(classe) {
@@ -173,48 +201,171 @@
         let codigo = '    ';
         if (atributos.length > 0) {
           codigo += `def __init__(self, ${atributos.map(attr => attr.split(":")[0]).join(", ")}):\n`;
-
-          atributos.forEach(atributo => {
-            const [nomeAtributo] = atributo.split(":");
+          atributos.forEach(attr => {
+            const [nomeAtributo] = attr.split(":");
             codigo += `        self.${nomeAtributo} = ${nomeAtributo}\n`;
-          })
+          });
         } else {
-          codigo += 'pass';
+          codigo += `def __init__(self):\n`;
         }
         return codigo;
-      }
-      
-      return `class ${classe.nome}:\n` + gerarConstrutorClasse(classe.atributos);
-    }
+      };
 
-    // Função para gerar o código /Python correspondente e exibi-lo
-    const exibirCodigoPython = function() {
-      codigoFonte = classes.map(classe => gerarCodigoFonteClasse(classe)).join("\n")
-      compilarComPyodide()
-      divCodigo.innerHTML = `<h3>Código</h3><pre>${codigoFonte}</pre>`
+      const codigoClasse = `class ${classe.nome}:\n` + gerarConstrutorClasse(classe.atributos) + '\n';
+      return codigoClasse;
     };
 
-    // Event listeners
-    buttonCriarClasse.addEventListener("click", criarClasse);
+    const exibirCodigoPython = function() {
+      codigoFonte = classes.map(classe => gerarCodigoFonteClasse(classe)).join("\n");
+      divCodigo.querySelector("pre").textContent = codigoFonte;
+    };
 
-    // Modal
-    var modal = document.getElementById("modal-classe");
-    var span = document.getElementsByClassName("botao-fechar")[0];
+    const abrirModalCriarObjeto = function(classe) {
+      atributosObjeto.innerHTML = ''; // Limpa atributos antes de adicionar novos
 
-    buttonNovaClasse.onclick = function() {
-      document.getElementById("nome-classe").click()
-      modal.style.display = "block";
-    }
+      classe.atributos.forEach(atributo => {
+        const divAtributo = document.createElement("div");
+        const [nomeAtributo, tipoAtributo] = atributo.replaceAll(" ","").split(":");
+        const labelAtributo = document.createElement("label");
+        const inputAtributo = document.createElement("input");
+        inputAtributo.placeholder = tipoAtributo;
+        labelAtributo.for = "atributo-"+nomeAtributo
+        labelAtributo.textContent = nomeAtributo+": "
+        inputAtributo.id = "atributo-"+nomeAtributo
+        inputAtributo.name = nomeAtributo;
+        divAtributo.appendChild(labelAtributo)
+        divAtributo.appendChild(inputAtributo);
+        atributosObjeto.appendChild(divAtributo);
+      });
 
-    span.onclick = function() {
-      modal.style.display = "none";
-    }
+      modalObjeto.style.display = "block";
+      document.getElementById("botao-criar-objeto").onclick = () => criarObjeto(classe);
+    };
 
-    window.onclick = function(event) {
-      if (event.target == modal) {
-        modal.style.display = "none";
+    const criarObjeto = function(classe) {
+      const nomeObjeto = document.getElementById("nome-objeto").value;
+      const atributosValores = {};
+
+      classe.atributos.forEach(atributo => {
+        const [nomeAtributo] = atributo.split(":");
+        const valor = document.querySelector(`input[name="${nomeAtributo}"]`).value;
+        atributosValores[nomeAtributo] = valor;
+      });
+
+      if (nomeObjeto === "") {
+        alert("O nome do objeto é obrigatório.");
+      } else if (objetos.some(obj => obj.nome.toLowerCase() === nomeObjeto.toLowerCase())) {
+        alert("Um objeto com esse nome já existe.");
+      } else {
+        const novoObjeto = { nome: nomeObjeto, classe: classe, atributos: atributosValores };
+        objetos.push(novoObjeto);
+        atualizarListaObjetos();
+        exibirCodigoPython();
+        document.getElementById("nome-objeto").value = "";
+        document.getElementsByClassName("botao-fechar")[1].click();
       }
-    }
+    };
+
+    const atualizarListaObjetos = function() {
+      divObjetosContainer.innerHTML = '';
+      objetos.forEach(objeto => {
+        const divObjeto = document.createElement("div");
+        divObjeto.className = "objeto";
+        divObjeto.id = `objeto-${objeto.nome.toLowerCase()}`;
+
+        const tagNomeObjeto = document.createElement("h4");
+        tagNomeObjeto.textContent = `Objeto: ${objeto.nome}`;
+        divObjeto.appendChild(tagNomeObjeto);
+
+        const tagClasseObjeto = document.createElement("pre");
+        tagClasseObjeto.textContent = `Instância da classe:\n  ${objeto.classe.nome}`;
+        divObjeto.appendChild(tagClasseObjeto);
+
+        const tagListaAtributos = document.createElement("pre");
+        tagListaAtributos.textContent = `Atributos:\n  ${Object.entries(objeto.atributos).map(([key, value]) => `${key}: ${value}`).join("\n  ")}`;
+        divObjeto.appendChild(tagListaAtributos);
+
+        const tagBotaoEditarObjeto = document.createElement("button");
+        tagBotaoEditarObjeto.textContent = 'Editar';
+        tagBotaoEditarObjeto.addEventListener("click", () => abrirModalEditarObjeto(objeto));
+        divObjeto.appendChild(tagBotaoEditarObjeto);
+
+        // Botão de exclusão
+        const tagBotaoExcluirObjeto = document.createElement("button");
+        tagBotaoExcluirObjeto.textContent = 'Excluir';
+        tagBotaoExcluirObjeto.addEventListener("click", () => excluirObjeto(objeto.nome));
+        divObjeto.appendChild(tagBotaoExcluirObjeto);
+
+        divObjetosContainer.appendChild(divObjeto);
+      });
+    };
+
+    const abrirModalEditarObjeto = function(objeto) {
+      objetoAtual = objeto;  // Armazena o objeto que está sendo editado
+      document.getElementById("nome-editar-objeto").value = objeto.nome;
+
+      editarAtributosObjeto.innerHTML = ''; // Limpa atributos antes de adicionar novos
+
+      Object.entries(objeto.atributos).forEach(([key, value]) => {
+        const divAtributo = document.createElement("div");
+        const labelAtributo = document.createElement("label")
+        const inputAtributo = document.createElement("input");
+        labelAtributo.for = "atributo-"+key 
+        labelAtributo.textContent = key+": "
+        inputAtributo.placeholder = objetoAtual.classe.atributos.map(atributoIt => atributoIt.replaceAll(" ","").split(":")).find(atributoIt => atributoIt[0] == key)[1];
+        inputAtributo.name = key;
+        inputAtributo.id = "atributo-"+key
+
+        inputAtributo.value = value; // Adiciona o valor atual do atributo
+        divAtributo.appendChild(labelAtributo);
+        divAtributo.appendChild(inputAtributo);
+        editarAtributosObjeto.appendChild(divAtributo);
+      });
+
+      modalEditarObjeto.style.display = "block";
+      document.getElementById("botao-salvar-edicoes").onclick = () => salvarEdicoesObjeto();
+    };
+
+    const salvarEdicoesObjeto = function() {
+      const atributosAtualizados = {};
+
+      Object.keys(objetoAtual.atributos).forEach((key, index) => {
+        const valor = document.querySelector(`#editar-atributos-objeto input[name="${key}"]`).value;
+        atributosAtualizados[key] = valor;
+      });
+
+      objetos = objetos.map(obj => {
+        if (obj.nome === objetoAtual.nome) {
+          return { ...obj, atributos: atributosAtualizados }; // Atualiza o objeto com os novos atributos
+        }
+        return obj;
+      });
+
+      atualizarListaObjetos();
+      exibirCodigoPython();
+      modalEditarObjeto.style.display = "none";
+    };
+
+    const excluirObjeto = function(nomeObjeto) {
+      objetos = objetos.filter(obj => obj.nome !== nomeObjeto); // Remove o objeto do array
+      atualizarListaObjetos();
+      exibirCodigoPython();
+    };
+
+    const fecharModal = function(modal) {
+      modal.style.display = "none";
+    };
+
+    document.querySelectorAll('.botao-fechar').forEach(button => {
+      button.onclick = () => fecharModal(button.closest('.modal'));
+    });
+
+    buttonNovaClasse.onclick = () => document.getElementById("modal-classe").style.display = "block";
+    buttonCriarClasse.onclick = criarClasse;
+
+    // Compile the code when the page loads
+    window.onload = compilarComPyodide;
+
   </script>
 </body>
 </html>
