@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -10,11 +10,12 @@
 </head>
 <body>
   <div id="center">
-    <label for="sub1" id="titulo">GAPy</label>
+    <label for="sub1" style="font-weight:800; padding: 10px; font-size: 30px;width: fit-content; right: 50%; left: 50%; position: relative;">GAPy</label>
     <div id="sub1">
       <div id="acoes">
-        <h3>Ações</h3>
-        <button id="botao-nova-classe">Nova classe...</button>
+        <h3>Açoes</h3>
+        <button id="botao-nova-classe" style="flex-grow: no-grow;">Nova classe...</button>
+        <button id="botao-compilar" style="flex-grow: grow;">Compilar</button>
       </div>
       <div id="classes">
         <h3>Classes</h3>
@@ -85,14 +86,27 @@
   </div>
 
   <script>
+    // Array para armazenar as classes
     var classes = [];
     var objetos = [];
-    var objetoAtual = null;  // Objeto que está sendo editado atualmente
+    var objetoAtual = null; 
+    var classeAtual = null; 
+    var saida = '';
+    var codigoFonte = '';
+    var estaCompilando = false;
 
-    let saida = '';
-    let codigoFonte = '';
-    let estaCompilando = false;
-    let classeAtual = null;
+    // Elementos do DOM
+    const buttonCriarClasse = document.getElementById("botao-criar-classe");
+    const buttonNovaClasse = document.getElementById("botao-nova-classe");
+    const buttonCompilar = document.getElementById("botao-compilar");
+    const divContainerClasses = document.getElementById("container-classes");
+    const divObjetosContainer = document.getElementById("objetos-container");
+    const divSaida = document.getElementById("saida");
+    const divCodigo = document.getElementById("codigo");
+    const modalObjeto = document.getElementById("modal-objeto");
+    const modalEditarObjeto = document.getElementById("modal-editar-objeto");
+    const atributosObjeto = document.getElementById("atributos-objeto");
+    const editarAtributosObjeto = document.getElementById("editar-atributos-objeto");
 
     const compilarComPyodide = () => {
       estaCompilando = true;
@@ -130,19 +144,7 @@
         }
       });
     };
-
-    // Elementos do DOM
-    const buttonCriarClasse = document.getElementById("botao-criar-classe");
-    const buttonNovaClasse = document.getElementById("botao-nova-classe");
-    const divContainerClasses = document.getElementById("container-classes");
-    const divObjetosContainer = document.getElementById("objetos-container");
-    const divSaida = document.getElementById("saida");
-    const divCodigo = document.getElementById("codigo");
-    const modalObjeto = document.getElementById("modal-objeto");
-    const modalEditarObjeto = document.getElementById("modal-editar-objeto");
-    const atributosObjeto = document.getElementById("atributos-objeto");
-    const editarAtributosObjeto = document.getElementById("editar-atributos-objeto");
-
+    
     const criarClasse = function() {
       const nomeClasse = document.getElementById("nome-classe").value;
       const atributosClasse = document.getElementById("nome-atributos").value;
@@ -158,6 +160,7 @@
           nome: nomeClasse,
           atributos: atributosClasse === "" ? [] : atributosClasse.split(";").map(attr => attr.trim())
         };
+
         classes.push(novaClasse);
         atualizarListaClasses();
         exibirCodigoPython();
@@ -174,7 +177,7 @@
         divClasse.id = `classe-${classe.nome.toLowerCase()}`;
 
         const tagNomeClasse = document.createElement("h4");
-        tagNomeClasse.textContent = `Classe: ${classe.nome}`;
+        tagNomeClasse.textContent = `${classe.nome}`;
         divClasse.appendChild(tagNomeClasse);
 
         const tagListaAtributos = document.createElement("pre");
@@ -189,7 +192,7 @@
 
         return divClasse;
       };
-
+      
       divContainerClasses.innerHTML = '';
       classes.forEach(classe => {
         divContainerClasses.appendChild(gerarDivClasse(classe));
@@ -203,14 +206,14 @@
           codigo += `def __init__(self, ${atributos.map(attr => attr.split(":")[0]).join(", ")}):\n`;
           atributos.forEach(attr => {
             const [nomeAtributo] = attr.split(":");
-            codigo += `        self.${nomeAtributo} = ${nomeAtributo}\n`;
-          });
+          codigo += `        self.${nomeAtributo} = ${nomeAtributo}\n`;
+        });
         } else {
           codigo += `def __init__(self):\n`;
         }
         return codigo;
       };
-
+      
       const codigoClasse = `class ${classe.nome}:\n` + gerarConstrutorClasse(classe.atributos) + '\n';
       return codigoClasse;
     };
@@ -274,12 +277,8 @@
         divObjeto.id = `objeto-${objeto.nome.toLowerCase()}`;
 
         const tagNomeObjeto = document.createElement("h4");
-        tagNomeObjeto.textContent = `Objeto: ${objeto.nome}`;
+        tagNomeObjeto.textContent = `${objeto.nome}: ${objeto.classe.nome}`;
         divObjeto.appendChild(tagNomeObjeto);
-
-        const tagClasseObjeto = document.createElement("pre");
-        tagClasseObjeto.textContent = `Instância da classe:\n  ${objeto.classe.nome}`;
-        divObjeto.appendChild(tagClasseObjeto);
 
         const tagListaAtributos = document.createElement("pre");
         tagListaAtributos.textContent = `Atributos:\n  ${Object.entries(objeto.atributos).map(([key, value]) => `${key}: ${value}`).join("\n  ")}`;
@@ -360,11 +359,13 @@
       button.onclick = () => fecharModal(button.closest('.modal'));
     });
 
-    buttonNovaClasse.onclick = () => document.getElementById("modal-classe").style.display = "block";
+    buttonNovaClasse.addEventListener('click', () => document.getElementById("modal-classe").style.display = "block");
+    buttonCompilar.addEventListener('click', () => compilarComPyodide());
+    
     buttonCriarClasse.onclick = criarClasse;
 
-    // Compile the code when the page loads
-    window.onload = compilarComPyodide;
+    // // Compile the code when the page loads
+    // window.onload = compilarComPyodide;
 
   </script>
 </body>
