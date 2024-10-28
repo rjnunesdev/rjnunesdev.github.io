@@ -144,25 +144,38 @@
         }
       });
     };
+
+    const validarNomeClasse = function(nomeClasse) {
+      if (nomeClasse === "") {
+        alert("O nome da classe é obrigatório.");
+        return false;
+      } else if (classes.some(el => el.nome.toLowerCase() === nomeClasse.toLowerCase())) {
+        alert("O nome da nova classe já existe.");
+        return false;
+      } else if (nomeClasse.charAt(0) !== nomeClasse.toUpperCase().charAt(0)) {
+        alert("O nome da nova classe deve iniciar com letra maiúscula.");
+        return false;
+      } else { 
+        return true;
+      }
+    }
     
+    const tratarAtributosClasse = function(atributos) {
+      return atributosClasse === "" ? [] : atributosClasse.split(";").map(atributo => atributo.replaceAll(" ", "")) 
+    }
+
     const criarClasse = function() {
       const nomeClasse = document.getElementById("nome-classe").value;
       const atributosClasse = document.getElementById("nome-atributos").value;
 
-      if (nomeClasse === "") {
-        alert("O nome da classe é obrigatório.");
-      } else if (classes.some(el => el.nome.toLowerCase() === nomeClasse.toLowerCase())) {
-        alert("O nome da nova classe já existe.");
-      } else if (nomeClasse.charAt(0) !== nomeClasse.toUpperCase().charAt(0)) {
-        alert("O nome da nova classe deve iniciar com letra maiúscula.");
-      } else {
+      if(validarNomeClasse(nomeClasse)) {
         const novaClasse = {
           nome: nomeClasse,
-          atributos: atributosClasse === "" ? [] : atributosClasse.split(";").map(attr => attr.trim())
+          atributos: tratarAtributosClasse(atributosClasse)
         };
 
-        classes.push(novaClasse);
-        atualizarListaClasses();
+        atualizarListaClasses(novaClasse);
+        atualizarCodigoFonte();
         exibirCodigoPython();
         document.getElementById("nome-classe").value = "";
         document.getElementById("nome-atributos").value = "";
@@ -170,7 +183,7 @@
       }
     };
 
-    const atualizarListaClasses = function() {
+    const atualizarListaClasses = function(novaClasse) {
       const gerarDivClasse = function(classe) {
         const divClasse = document.createElement("div");
         divClasse.className = "classe";
@@ -194,6 +207,7 @@
       };
       
       divContainerClasses.innerHTML = '';
+      classes.push(novaClasse)
       classes.forEach(classe => {
         divContainerClasses.appendChild(gerarDivClasse(classe));
       });
@@ -218,8 +232,11 @@
       return codigoClasse;
     };
 
-    const exibirCodigoPython = function() {
+    const atualizarCodigoFonte = function() {
       codigoFonte = classes.map(classe => gerarCodigoFonteClasse(classe)).join("\n");
+    }
+
+    const exibirCodigoPython = function() {
       divCodigo.querySelector("pre").textContent = codigoFonte;
     };
 
@@ -245,6 +262,18 @@
       document.getElementById("botao-criar-objeto").onclick = () => criarObjeto(classe);
     };
 
+    const validarNomeObjeto = function(nomeObjeto) {
+      if (nomeObjeto === "") {
+        alert("O nome do objeto é obrigatório.");
+        return false;
+      } else if (objetos.some(obj => obj.nome.toLowerCase() === nomeObjeto.toLowerCase())) {
+        alert("Um objeto com esse nome já existe.");
+        return false;
+      } else {
+        return true;
+      }
+    }
+
     const criarObjeto = function(classe) {
       const nomeObjeto = document.getElementById("nome-objeto").value;
       const atributosValores = {};
@@ -255,11 +284,7 @@
         atributosValores[nomeAtributo] = valor;
       });
 
-      if (nomeObjeto === "") {
-        alert("O nome do objeto é obrigatório.");
-      } else if (objetos.some(obj => obj.nome.toLowerCase() === nomeObjeto.toLowerCase())) {
-        alert("Um objeto com esse nome já existe.");
-      } else {
+      if (validarNomeObjeto(nomeObjeto))  {
         const novoObjeto = { nome: nomeObjeto, classe: classe, atributos: atributosValores };
         objetos.push(novoObjeto);
         atualizarListaObjetos();
