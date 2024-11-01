@@ -14,7 +14,7 @@
     <div id="sub1">
       <div id="acoes">
         <h3>Açoes</h3>
-        <button id="botao-nova-classe" style="flex-grow: no-grow;">Nova classe...</button>
+        <button id="botao-nova-classe" style="flex-grow: no-grow;">Criar classe...</button>
         <button id="botao-compilar" style="flex-grow: grow;">Compilar</button>
       </div>
       <div id="classes">
@@ -51,7 +51,7 @@
         <label for="nome-atributos">Atributos</label>
         <input type="text" id="nome-atributos" name="nome-atributos" placeholder="Exemplo: nome: string; idade: int">
       </div>
-      <button type="button" id="botao-criar-classe">Criar classe</button>
+      <button type="button" id="botao-criar-classe">Criar</button>
     </div>
   </div>
 
@@ -160,58 +160,14 @@
       }
     }
     
-    const tratarAtributosClasse = function(atributos) {
+    const tratarAtributosClasse = function(atributosClasse) {
       return atributosClasse === "" ? [] : atributosClasse.split(";").map(atributo => atributo.replaceAll(" ", "")) 
     }
 
-    const criarClasse = function() {
-      const nomeClasse = document.getElementById("nome-classe").value;
-      const atributosClasse = document.getElementById("nome-atributos").value;
-
-      if(validarNomeClasse(nomeClasse)) {
-        const novaClasse = {
-          nome: nomeClasse,
-          atributos: tratarAtributosClasse(atributosClasse)
-        };
-
-        atualizarListaClasses(novaClasse);
-        atualizarCodigoFonte();
-        exibirCodigoPython();
-        document.getElementById("nome-classe").value = "";
-        document.getElementById("nome-atributos").value = "";
-        document.getElementsByClassName("botao-fechar")[0].click();
-      }
-    };
-
-    const atualizarListaClasses = function(novaClasse) {
-      const gerarDivClasse = function(classe) {
-        const divClasse = document.createElement("div");
-        divClasse.className = "classe";
-        divClasse.id = `classe-${classe.nome.toLowerCase()}`;
-
-        const tagNomeClasse = document.createElement("h4");
-        tagNomeClasse.textContent = `${classe.nome}`;
-        divClasse.appendChild(tagNomeClasse);
-
-        const tagListaAtributos = document.createElement("pre");
-        tagListaAtributos.textContent = `Atributos:\n  ${classe.atributos.join("\n  ")}`;
-        divClasse.appendChild(tagListaAtributos);
-
-        const tagBotaoCriarObjeto = document.createElement("button");
-        tagBotaoCriarObjeto.textContent = 'Criar objeto...';
-        tagBotaoCriarObjeto.id = `criar-objeto-${classe.nome.toLowerCase()}`;
-        tagBotaoCriarObjeto.addEventListener("click", () => abrirModalCriarObjeto(classe));
-        divClasse.appendChild(tagBotaoCriarObjeto);
-
-        return divClasse;
-      };
-      
-      divContainerClasses.innerHTML = '';
-      classes.push(novaClasse)
-      classes.forEach(classe => {
-        divContainerClasses.appendChild(gerarDivClasse(classe));
-      });
-    };
+    const zerarAtributosModalNovaClasse = function() {
+      document.getElementById("nome-classe").value = "";
+      document.getElementById("nome-atributos").value = "";
+    }
 
     const gerarCodigoFonteClasse = function(classe) {
       const gerarConstrutorClasse = function(atributos) {
@@ -274,24 +230,34 @@
       }
     }
 
-    const criarObjeto = function(classe) {
-      const nomeObjeto = document.getElementById("nome-objeto").value;
-      const atributosValores = {};
+    const atualizarListaClasses = function(novaClasse) {
+      const gerarDivClasse = function(classe) {
+        const divClasse = document.createElement("div");
+        divClasse.className = "classe";
+        divClasse.id = `classe-${classe.nome.toLowerCase()}`;
 
-      classe.atributos.forEach(atributo => {
-        const [nomeAtributo] = atributo.split(":");
-        const valor = document.querySelector(`input[name="${nomeAtributo}"]`).value;
-        atributosValores[nomeAtributo] = valor;
+        const tagNomeClasse = document.createElement("h4");
+        tagNomeClasse.textContent = `${classe.nome}`;
+        divClasse.appendChild(tagNomeClasse);
+
+        const tagListaAtributos = document.createElement("pre");
+        tagListaAtributos.textContent = `Atributos:\n  ${classe.atributos.join("\n  ")}`;
+        divClasse.appendChild(tagListaAtributos);
+
+        const tagBotaoCriarObjeto = document.createElement("button");
+        tagBotaoCriarObjeto.textContent = 'Criar objeto...';
+        tagBotaoCriarObjeto.id = `criar-objeto-${classe.nome.toLowerCase()}`;
+        tagBotaoCriarObjeto.addEventListener("click", () => abrirModalCriarObjeto(classe));
+        divClasse.appendChild(tagBotaoCriarObjeto);
+
+        return divClasse;
+      };
+      
+      divContainerClasses.innerHTML = '';
+      classes.push(novaClasse)
+      classes.forEach(classe => {
+        divContainerClasses.appendChild(gerarDivClasse(classe));
       });
-
-      if (validarNomeObjeto(nomeObjeto))  {
-        const novoObjeto = { nome: nomeObjeto, classe: classe, atributos: atributosValores };
-        objetos.push(novoObjeto);
-        atualizarListaObjetos();
-        exibirCodigoPython();
-        document.getElementById("nome-objeto").value = "";
-        document.getElementsByClassName("botao-fechar")[1].click();
-      }
     };
 
     const atualizarListaObjetos = function() {
@@ -358,11 +324,11 @@
         atributosAtualizados[key] = valor;
       });
 
-      objetos = objetos.map(obj => {
-        if (obj.nome === objetoAtual.nome) {
-          return { ...obj, atributos: atributosAtualizados }; // Atualiza o objeto com os novos atributos
+      objetos = objetos.map(objeto => {
+        if (objeto.nome === objetoAtual.nome) {
+          return { ...objeto, atributos: atributosAtualizados }; // Atualiza o objeto com os novos atributos
         }
-        return obj;
+        return objeto;
       });
 
       atualizarListaObjetos();
@@ -380,6 +346,45 @@
       modal.style.display = "none";
     };
 
+    const criarObjeto = function(classe) {
+      const nomeObjeto = document.getElementById("nome-objeto").value;
+      const atributosValores = {};
+
+      classe.atributos.forEach(atributo => {
+        const [nomeAtributo] = atributo.split(":");
+        const valor = document.querySelector(`input[name="${nomeAtributo}"]`).value;
+        atributosValores[nomeAtributo] = valor;
+      });
+
+      if (validarNomeObjeto(nomeObjeto))  {
+        const novoObjeto = { nome: nomeObjeto, classe: classe, atributos: atributosValores };
+        objetos.push(novoObjeto);
+        atualizarListaObjetos();
+        exibirCodigoPython();
+        document.getElementById("nome-objeto").value = "";
+        document.getElementsByClassName("botao-fechar")[1].click();
+      }
+    };
+
+    const criarClasse = function() {
+      const nomeClasse = document.getElementById("nome-classe").value;
+      const atributosClasse = document.getElementById("nome-atributos").value;
+
+      if(validarNomeClasse(nomeClasse)) {
+        const novaClasse = {
+          nome: nomeClasse,
+          atributos: tratarAtributosClasse(atributosClasse)
+        };
+
+        atualizarListaClasses(novaClasse);
+        atualizarCodigoFonte();
+        exibirCodigoPython();
+
+        zerarAtributosModalNovaClasse()
+        document.getElementsByClassName("botao-fechar")[0].click();
+      }
+    };
+
     document.querySelectorAll('.botao-fechar').forEach(button => {
       button.onclick = () => fecharModal(button.closest('.modal'));
     });
@@ -388,9 +393,6 @@
     buttonCompilar.addEventListener('click', () => compilarComPyodide());
     
     buttonCriarClasse.onclick = criarClasse;
-
-    // // Compile the code when the page loads
-    // window.onload = compilarComPyodide;
 
   </script>
 </body>
