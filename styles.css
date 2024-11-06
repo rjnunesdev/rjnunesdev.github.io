@@ -12,12 +12,10 @@ div {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding-inline:10px ;
   border: none;
 }
 #sub1, #sub2 {
   display: flex;
-  /* margin: 5px; */
   border: none;
 }
 #sub1 > div , #sub2 > div {
@@ -28,16 +26,20 @@ div {
 }
 #sub1{
   flex-grow: 3;
+  max-height: 50vh;
 }
 #sub2{
   flex-grow: 2;
+  max-height: 40vh;
 }
 #acoes {
   min-width: 100px;
   align-items: flex-start;
+  gap: 10px;
 }
 #acoes > * {
   width: 100%;
+  padding: 5px;
 }
 h3{
   margin-block-start: 0 ;
@@ -45,22 +47,20 @@ h3{
 }
 #classes {
   flex-grow: 6;
-  flex-wrap: wrap;
 }
 #codigo {
   flex-grow: 6;
   flex-wrap: wrap;
 }
 #codigo > pre {
-  max-height: 43vh;
-  height: 43vh;
+  flex-grow: 1;
   overflow-y: auto;
   border: 1px solid;
   padding: 10px;
   margin: 0;
   border-radius: 5px;
 }
-.classe {
+.classe, .objeto {
   margin-inline: 5px;
   height: fit-content;
   width: fit-content;
@@ -70,18 +70,12 @@ h3{
   border-radius: 5px;
   background-color: "#f9f9f9"
 }
-#objetos {
-  flex-grow: 3;
-}
-.objeto {
-  flex-grow: 3;
-}
-#saida {
-  flex-grow: 2;
+#objetos, #saida {
+  flex-grow: 1;
+  flex-shrink: noshrink;
 }
 #saida > pre {
-  max-height: 28vh;
-  height: 28vh;
+  flex-grow: 1;
   overflow-y: auto;
   border: 1px solid;
   padding: 10px;
@@ -106,8 +100,6 @@ h3{
 #container-classes {
   display: flex;
   flex-grow: 1;
-  max-height: 45vh;
-  height: 45vh;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-around;
@@ -117,8 +109,6 @@ h3{
 #objetos-container {
   display: flex;
   flex-grow: 1;
-  max-height: 30vh;
-  height: 30vh;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: space-around;
@@ -168,4 +158,26 @@ h3{
   color: #000;
   text-decoration: none;
   cursor: pointer;
+}
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey; 
+  border-radius: 10px;
+  margin: 5px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: grey; 
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #282828; 
 }

@@ -14,8 +14,8 @@
     <div id="sub1">
       <div id="acoes">
         <h3>Açoes</h3>
-        <button id="botao-nova-classe" style="flex-grow: no-grow;">Nova classe...</button>
-        <button id="botao-compilar" style="flex-grow: grow;">Compilar</button>
+        <button id="botao-nova-classe">Nova classe...</button>
+        <button id="botao-compilar">Compilar</button>
       </div>
       <div id="classes">
         <h3>Classes</h3>
@@ -363,10 +363,6 @@
     buttonCompilar.addEventListener('click', () => compilarComPyodide());
     
     buttonCriarClasse.onclick = criarClasse;
-
-    // // Compile the code when the page loads
-    // window.onload = compilarComPyodide;
-
   </script>
 </body>
 </html>
