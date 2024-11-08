@@ -51,6 +51,10 @@
         <label for="nome-atributos">Atributos</label>
         <input type="text" id="nome-atributos" name="nome-atributos" placeholder="Exemplo: nome: string; idade: int">
       </div>
+      <div>
+        <label for="metodos-classe">Métodos</label>
+        <textarea type="text" id="metodos-classe" placeholder="Exemplo: def soma(a,b):\n    return a + b\n" style="display: flex; width: 100%;"></textarea>
+      </div>
       <button type="button" id="botao-criar-classe">Criar</button>
     </div>
   </div>
@@ -86,6 +90,7 @@
   </div>
 
   <script>
+    const indentacao = '    '
     // Array para armazenar as classes
     var classes = [];
     var objetos = [];
@@ -108,14 +113,16 @@
     const atributosObjeto = document.getElementById("atributos-objeto");
     const editarAtributosObjeto = document.getElementById("editar-atributos-objeto");
 
-    const compilarComPyodide = () => {
+    const compilarComPyodide = (codigo) => {
       estaCompilando = true;
       divSaida.innerHTML = `<h3>Saída</h3><pre>Compilando...</pre>`;
+      console.log(codigo)
+      debugger
       loadPyodide().then(pyodide => {
         let avaliacao = '';
         try {
-          avaliacao = pyodide.runPython(codigoFonte);
-          saida = "Código compilado com sucesso";
+          avaliacao = "Código compilado com sucesso";
+          saida = pyodide.runPython(codigo == null || codigo == undefined ? codigoFonte : codigo);
         } catch (erro) {
           if (erro.name === "PythonError") {
             saida = erro;
@@ -171,20 +178,17 @@
 
     const gerarCodigoFonteClasse = function(classe) {
       const gerarConstrutorClasse = function(atributos) {
-        let codigo = '    ';
+        let codigo = '';
         if (atributos.length > 0) {
-          codigo += `def __init__(self, ${atributos.map(attr => attr.split(":")[0]).join(", ")}):\n`;
+          codigo += `${indentacao}def __init__(self, ${atributos.map(attr => attr.split(":")[0]).join(", ")}):\n`;
           atributos.forEach(attr => {
             const [nomeAtributo] = attr.split(":");
-          codigo += `        self.${nomeAtributo} = ${nomeAtributo}\n`;
-        });
-        } else {
-          codigo += `def __init__(self):\n`;
+            codigo += `${indentacao+indentacao}self.${nomeAtributo} = ${nomeAtributo}\n`;
+          });
         }
         return codigo;
       };
-      
-      const codigoClasse = `class ${classe.nome}:\n` + gerarConstrutorClasse(classe.atributos) + '\n';
+      const codigoClasse = `class ${classe.nome}:\n` + gerarConstrutorClasse(classe.atributos) + `\n${indentacao}` + classe.metodos.map(metodo => metodo.replaceAll("\n", `\n${indentacao}`)).join(`\n${indentacao}`) + "\n";
       return codigoClasse;
     };
 
@@ -243,6 +247,10 @@
         const tagListaAtributos = document.createElement("pre");
         tagListaAtributos.textContent = `Atributos:\n  ${classe.atributos.join("\n  ")}`;
         divClasse.appendChild(tagListaAtributos);
+      
+        const tagListaMetodos = document.createElement("pre");
+        tagListaMetodos.textContent = `Métodos:\n  ${classe.metodos.map(metodo => metodo.indexOf("def") == -1 ? "def" + metodo : metodo).map(metodo => metodo.replace("def ","").substring(0,metodo.indexOf(":")).replace(":","")).join("")}`;
+        divClasse.appendChild(tagListaMetodos);
 
         const tagBotaoCriarObjeto = document.createElement("button");
         tagBotaoCriarObjeto.textContent = 'Criar objeto...';
@@ -274,6 +282,36 @@
         const tagListaAtributos = document.createElement("pre");
         tagListaAtributos.textContent = `Atributos:\n  ${Object.entries(objeto.atributos).map(([key, value]) => `${key}: ${value}`).join("\n  ")}`;
         divObjeto.appendChild(tagListaAtributos);
+
+        const tagListaMetodos = document.createElement("select")
+        tagListaMetodos.id = `select-metodo-${objeto.classe.nome}-${objeto.nome}`
+        objeto.classe.metodos.forEach((metodo, index) => {
+          const tagOption = document.createElement("option")
+          let texto = metodo.replace("def ","").replaceAll(" ","")
+          texto = texto.substring(0,texto.indexOf(":"))
+          tagOption.textContent = texto
+          tagOption.value = texto.substring(0, texto.indexOf("("))
+          tagListaMetodos.appendChild(tagOption)
+        })
+        divObjeto.appendChild(tagListaMetodos)
+        
+        const tagInputParametros = document.createElement("input")
+        tagInputParametros.id = `parametros-metodo-${objeto.classe.nome}-${objeto.nome}`
+        tagInputParametros.placeholder = "Exemplo: 10,\"Olá\""
+        divObjeto.appendChild(tagInputParametros)
+
+        const tagBotaoExecutar = document.createElement("button") 
+        tagBotaoExecutar.textContent = "Executar"
+        tagBotaoExecutar.addEventListener("click", ()=> {
+          let nomeObjeto = objeto.nome
+          let nomeClasse = objeto.classe.nome
+          let parametros = document.getElementById(`parametros-metodo-${objeto.classe.nome}-${objeto.nome}`).value
+          let nomeMetodo = document.getElementById(`select-metodo-${objeto.classe.nome}-${objeto.nome}`).value
+          let atributosObjeto = Object.values(objeto.atributos).join(",")
+          compilarComPyodide(`${codigoFonte.trimEnd()}\n${nomeObjeto} = ${objeto.classe.nome}(${atributosObjeto})\nprint("${nomeMetodo}")\n${nomeObjeto}.${nomeMetodo}(${parametros})`)
+        })
+
+        divObjeto.appendChild(tagBotaoExecutar)
 
         const tagBotaoEditarObjeto = document.createElement("button");
         tagBotaoEditarObjeto.textContent = 'Editar';
@@ -369,11 +407,13 @@
     const criarClasse = function() {
       const nomeClasse = document.getElementById("nome-classe").value;
       const atributosClasse = document.getElementById("nome-atributos").value;
+      const metodosClasse = document.getElementById("metodos-classe").value;
 
       if(validarNomeClasse(nomeClasse)) {
         const novaClasse = {
           nome: nomeClasse,
-          atributos: tratarAtributosClasse(atributosClasse)
+          atributos: tratarAtributosClasse(atributosClasse),
+          metodos: metodosClasse.split("\ndef").map(metodo => metodo.indexOf("def") == -1 ? "def" + metodo : metodo)
         };
 
         atualizarListaClasses(novaClasse);
