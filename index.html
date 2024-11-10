@@ -120,9 +120,10 @@
       debugger
       loadPyodide().then(pyodide => {
         let avaliacao = '';
+        let codigoTeste = codigo == null || codigo == undefined ? codigoFonte : codigo
         try {
           avaliacao = "Código compilado com sucesso";
-          saida = pyodide.runPython(codigo == null || codigo == undefined ? codigoFonte : codigo);
+          saida = `${codigoTeste}\n\n"""SAIDA: ${pyodide.runPython(codigo == null || codigo == undefined ? codigoFonte : codigo)}""" `;
         } catch (erro) {
           if (erro.name === "PythonError") {
             saida = erro;
@@ -140,8 +141,11 @@
               case "IndentationError":
                 avaliacao = "Erro de indentação";
                 break;
+              case "OSError":
+                avaliacao = "Erro de Sistema Operacional";
+                break;
               default:
-                avaliacao = "Erro desconhecido";
+                avaliacao = `${type} - ("Erro desconhecido")`;
                 break;
             }
           }
@@ -308,7 +312,7 @@
           let parametros = document.getElementById(`parametros-metodo-${objeto.classe.nome}-${objeto.nome}`).value
           let nomeMetodo = document.getElementById(`select-metodo-${objeto.classe.nome}-${objeto.nome}`).value
           let atributosObjeto = Object.values(objeto.atributos).join(",")
-          compilarComPyodide(`${codigoFonte.trimEnd()}\n${nomeObjeto} = ${objeto.classe.nome}(${atributosObjeto})\nprint("${nomeMetodo}")\n${nomeObjeto}.${nomeMetodo}(${parametros})`)
+          compilarComPyodide(`${codigoFonte.trimEnd()}\n\n${nomeObjeto} = ${objeto.classe.nome}(${atributosObjeto})\n${nomeObjeto}.${nomeMetodo}(${parametros})`)
         })
 
         divObjeto.appendChild(tagBotaoExecutar)
