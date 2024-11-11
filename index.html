@@ -170,10 +170,6 @@
         return true;
       }
     }
-    
-    const tratarAtributosClasse = function(atributosClasse) {
-      return atributosClasse === "" ? [] : atributosClasse.split(";").map(atributo => atributo.replaceAll(" ", "")) 
-    }
 
     const zerarAtributosModalNovaClasse = function() {
       document.getElementById("nome-classe").value = "";
@@ -408,6 +404,22 @@
       }
     };
 
+    const tratarAtributosClasse = function(atributosClasse) {
+      let possuiAtributos = atributosClasse != "" || atributosClasse != null || atributosClasse != undefined
+      const processarAtributos = function(atributos) {
+        return atributos.split(";").map(atributo => atributo.replaceAll(" ", ""))
+      }
+      return possuiAtributos ? processarAtributos(atributosClasse) : []
+    }
+
+    const tratarMetodosClasse = function(metodosClasse) {
+      let possuiMetodos = metodosClasse != "" || metodosClasse != null || metodosClasse != undefined
+      const processarMetodos = function(metodos) {
+        return metodosClasse.split("\ndef").map(metodo => metodo.indexOf("def") == -1 ? "def" + metodo : metodo)
+      }
+      return possuiMetodos ? processarMetodos(metodosClasse) : ""
+    }
+
     const criarClasse = function() {
       const nomeClasse = document.getElementById("nome-classe").value;
       const atributosClasse = document.getElementById("nome-atributos").value;
@@ -417,13 +429,11 @@
         const novaClasse = {
           nome: nomeClasse,
           atributos: tratarAtributosClasse(atributosClasse),
-          metodos: metodosClasse.split("\ndef").map(metodo => metodo.indexOf("def") == -1 ? "def" + metodo : metodo)
+          metodos: tratarMetodosClasse(metodosClasse)
         };
-
         atualizarListaClasses(novaClasse);
         atualizarCodigoFonte();
         exibirCodigoPython();
-
         zerarAtributosModalNovaClasse()
         document.getElementsByClassName("botao-fechar")[0].click();
       }
