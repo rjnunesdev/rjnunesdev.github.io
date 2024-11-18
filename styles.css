@@ -131,6 +131,24 @@ h3{
   border: none;
 }
 
+#atributos-objeto > * {
+  margin-block: 5px;
+}
+
+.objeto > * {
+  display: flex;
+}
+.objeto > button {
+  display: inline;
+}
+.objeto > select {
+  width: 100%;
+  margin-bottom: 10px;
+}
+.objeto > input {
+  margin-bottom: 10px;
+}
+
 .modal-conteudo > div > * {
   font-size: 20px;
   line-height: 1.5;
@@ -162,7 +180,7 @@ h3{
   text-decoration: none;
   cursor: pointer;
 }
-/* width */
+/* Scroll width */
 ::-webkit-scrollbar {
   width: 5px;
 }
@@ -184,3 +202,4 @@ h3{
 ::-webkit-scrollbar-thumb:hover {
   background: #282828; 
 }
+

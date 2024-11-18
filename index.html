@@ -15,7 +15,7 @@
       <div id="acoes">
         <h3>Açoes</h3>
         <button id="botao-nova-classe">Nova classe...</button>
-        <button id="botao-compilar">Compilar</button>
+        <button id="botao-compilar">Gerar código</button>
       </div>
       <div id="classes">
         <h3>Classes</h3>
@@ -45,7 +45,7 @@
       <span class="botao-fechar">&times;</span>
       <div>
         <label for="nome-classe">Nome</label>
-        <input type="text" id="nome-classe" name="nome-classe">
+        <input type="text" id="nome-classe" name="nome-classe" placeholder="Exemplo: TesteTesteTeste">
       </div>
       <div>
         <label for="nome-atributos">Atributos</label>
@@ -53,7 +53,7 @@
       </div>
       <div>
         <label for="metodos-classe">Métodos</label>
-        <textarea type="text" id="metodos-classe" placeholder="Exemplo: def soma(a,b):\n    return a + b\n" style="display: flex; width: 100%;"></textarea>
+        <textarea type="text" id="metodos-classe" placeholder="Exemplo:&#10;def soma(a,b):&#10;   return a + b" style="display: flex; width: 100%; min-height: 200px; resize: vertical;white-space: nowrap;"></textarea>
       </div>
       <button type="button" id="botao-criar-classe">Criar</button>
     </div>
@@ -113,16 +113,20 @@
     const atributosObjeto = document.getElementById("atributos-objeto");
     const editarAtributosObjeto = document.getElementById("editar-atributos-objeto");
 
-    const compilarComPyodide = (codigo) => {
+    const interpretarComPyodide = (codigo) => {
       estaCompilando = true;
       divSaida.innerHTML = `<h3>Saída</h3><pre>Compilando...</pre>`;
       console.log(codigo)
-      debugger
+      
+      gerarCodigoFonte();
+      exibirCodigoPython();
+
       loadPyodide().then(pyodide => {
         let avaliacao = '';
+        let codigoTeste = codigo == null || codigo == undefined ? codigoFonte : codigo
         try {
           avaliacao = "Código compilado com sucesso";
-          saida = pyodide.runPython(codigo == null || codigo == undefined ? codigoFonte : codigo);
+          saida = pyodide.runPython(codigoTeste);
         } catch (erro) {
           if (erro.name === "PythonError") {
             saida = erro;
@@ -147,52 +151,31 @@
           }
         } finally {
           estaCompilando = false;
-          divSaida.innerHTML = `<h3>Saída ${avaliacao && avaliacao !== '' ? "(" + avaliacao + ")" : ''}</h3><pre>${saida}</pre>`;
+          divSaida.innerHTML = `<h3>Saída ${avaliacao && avaliacao !== '' ? "(" + avaliacao + ")" : ''}</h3><pre>${saida ? codigo + "\n# SAIDA: " + saida : ""}</pre>`;
         }
       });
     };
-
-    const validarNomeClasse = function(nomeClasse) {
-      if (nomeClasse === "") {
-        alert("O nome da classe é obrigatório.");
-        return false;
-      } else if (classes.some(el => el.nome.toLowerCase() === nomeClasse.toLowerCase())) {
-        alert("O nome da nova classe já existe.");
-        return false;
-      } else if (nomeClasse.charAt(0) !== nomeClasse.toUpperCase().charAt(0)) {
-        alert("O nome da nova classe deve iniciar com letra maiúscula.");
-        return false;
-      } else { 
-        return true;
-      }
-    }
-    
-    const tratarAtributosClasse = function(atributosClasse) {
-      return atributosClasse === "" ? [] : atributosClasse.split(";").map(atributo => atributo.replaceAll(" ", "")) 
-    }
-
-    const zerarAtributosModalNovaClasse = function() {
-      document.getElementById("nome-classe").value = "";
-      document.getElementById("nome-atributos").value = "";
-    }
 
     const gerarCodigoFonteClasse = function(classe) {
       const gerarConstrutorClasse = function(atributos) {
         let codigo = '';
         if (atributos.length > 0) {
-          codigo += `${indentacao}def __init__(self, ${atributos.map(attr => attr.split(":")[0]).join(", ")}):\n`;
-          atributos.forEach(attr => {
-            const [nomeAtributo] = attr.split(":");
+          let nomesAtributos = atributos.map(attr => attr.split(":")[0])
+          codigo += `${indentacao}def __init__(self, ${nomesAtributos.join(", ")}):\n`;
+          nomesAtributos.forEach(nomeAtributo => {
             codigo += `${indentacao+indentacao}self.${nomeAtributo} = ${nomeAtributo}\n`;
           });
         }
         return codigo;
       };
-      const codigoClasse = `class ${classe.nome}:\n` + gerarConstrutorClasse(classe.atributos) + `\n${indentacao}` + classe.metodos.map(metodo => metodo.replaceAll("\n", `\n${indentacao}`)).join(`\n${indentacao}`) + "\n";
+      let metodosIndentados = indentacao + classe.metodos.map(metodo => metodo.replaceAll("\n", `\n${indentacao}`)).join(`\n${indentacao}`)
+      let cabecalho = `class ${classe.nome}:`
+      let metodoConstrutor = gerarConstrutorClasse(classe.atributos)
+      const codigoClasse = `${cabecalhoClasse}\n${metodoConstrutor}\n${metodosIndentados}\n`;
       return codigoClasse;
     };
 
-    const atualizarCodigoFonte = function() {
+    const gerarCodigoFonte = function() {
       codigoFonte = classes.map(classe => gerarCodigoFonteClasse(classe)).join("\n");
     }
 
@@ -219,14 +202,26 @@
       });
 
       modalObjeto.style.display = "block";
-      document.getElementById("botao-criar-objeto").onclick = () => criarObjeto(classe);
+      
+      document.getElementById("botao-criar-objeto").onclick = () => {
+        let nomeObjeto = document.getElementById("nome-objeto").value;
+        const valoresAtributos = {};
+
+        classe.atributos.forEach(atributo => {
+          const [nomeAtributo] = atributo.split(":");
+          const valor = document.querySelector(`input[name="${nomeAtributo}"]`).value;
+          valoresAtributos[nomeAtributo] = valor;
+        });
+        criarObjeto(classe, nomeObjeto, valoresAtributos)
+      };
     };
 
     const validarNomeObjeto = function(nomeObjeto) {
+      let regexNomeObjeto = /^[a-z][a-zA-Z0-9_]*$/gm
       if (nomeObjeto === "") {
         alert("O nome do objeto é obrigatório.");
         return false;
-      } else if (objetos.some(obj => obj.nome.toLowerCase() === nomeObjeto.toLowerCase())) {
+      } else if (!regexNomeObjeto.test(nomeObjeto)) {
         alert("Um objeto com esse nome já existe.");
         return false;
       } else {
@@ -234,7 +229,19 @@
       }
     }
 
-    const atualizarListaClasses = function(novaClasse) {
+    const gerarRepresentacaoClasses = function(novaClasse) {
+      const tratarAtributos = function(atributos) {
+        return atributos.length !== 0 
+          ? atributos.join("\n"+indentacao) 
+          : "(SEM ATRIBUTOS)"
+      }
+      const tratarMetodos = function(metodos) {
+        let existemMetodos = metodos.length !== 0
+        return existemMetodos 
+          ? metodos.map(metodo => metodo.substring(metodo.indexOf("def ")+4, metodo.indexOf(":")))
+                   .join("\n"+indentacao)
+          : "(SEM MÉTODOS)"
+      }
       const gerarDivClasse = function(classe) {
         const divClasse = document.createElement("div");
         divClasse.className = "classe";
@@ -245,11 +252,11 @@
         divClasse.appendChild(tagNomeClasse);
 
         const tagListaAtributos = document.createElement("pre");
-        tagListaAtributos.textContent = `Atributos:\n  ${classe.atributos.join("\n  ")}`;
+        tagListaAtributos.textContent = `Atributos:\n${indentacao}${tratarAtributos(classe.atributos)}`;
         divClasse.appendChild(tagListaAtributos);
       
         const tagListaMetodos = document.createElement("pre");
-        tagListaMetodos.textContent = `Métodos:\n  ${classe.metodos.map(metodo => metodo.indexOf("def") == -1 ? "def" + metodo : metodo).map(metodo => metodo.replace("def ","").substring(0,metodo.indexOf(":")).replace(":","")).join("")}`;
+        tagListaMetodos.textContent = `Métodos:\n${indentacao}${tratarMetodos(classe.metodos)}`;
         divClasse.appendChild(tagListaMetodos);
 
         const tagBotaoCriarObjeto = document.createElement("button");
@@ -260,69 +267,95 @@
 
         return divClasse;
       };
+      const adicionarRepresentacaoVisual = function (representacaoVisual) {
+        divContainerClasses.appendChild(representacaoVisual)
+      };
       
-      divContainerClasses.innerHTML = '';
-      classes.push(novaClasse)
-      classes.forEach(classe => {
-        divContainerClasses.appendChild(gerarDivClasse(classe));
-      });
+      let representacaoVisualClasse = gerarDivClasse(novaClasse)
+      adicionarRepresentacaoVisual(representacaoVisualClasse)
     };
 
-    const atualizarListaObjetos = function() {
+    const criarDivObjeto = function(objeto) {
+      let divObjeto = document.createElement("div");
+      divObjeto.className = "objeto";
+      divObjeto.id = `objeto-${objeto.nome.toLowerCase()}`;
+      return divObjeto; 
+    }
+    const criarTagNomeObjeto = function(objeto) {
+      const tagNomeObjeto = document.createElement("h4");
+      tagNomeObjeto.textContent = `${objeto.nome}: ${objeto.classe.nome}`;
+      return tagNomeObjeto
+    }
+    const criarTagListaAtributos = function(objeto) {
+      const tagListaAtributos = document.createElement("pre");
+      let listaAtributos = Object.entries(objeto.atributos).map(([key, value]) => `${key}: ${value}`).join("\n  ")
+      tagListaAtributos.textContent = `Atributos:\n  ${listaAtributos}`;
+      return tagListaAtributos
+    }
+    const criarTagListaMetodos = function(objeto) {
+      const tagListaMetodos = document.createElement("select")
+      tagListaMetodos.id = `select-metodo-${objeto.classe.nome}-${objeto.nome}`
+      objeto.classe.metodos.forEach((metodo, index) => {
+        const tagOption = document.createElement("option")
+        let texto = metodo.replace("def ","").replaceAll(" ","")
+        texto = texto.substring(0,texto.indexOf(":"))
+        tagOption.textContent = texto
+        tagOption.value = texto.substring(0, texto.indexOf("("))
+        tagListaMetodos.appendChild(tagOption)
+      })
+      return tagListaMetodos
+    }
+    const criarTagInputParametros = function(objeto) {
+      const tagInputParametros = document.createElement("input")
+      tagInputParametros.id = `parametros-metodo-${objeto.classe.nome}-${objeto.nome}`
+      tagInputParametros.placeholder = "Exemplo: 10,\"Olá\""
+      divObjeto.appendChild(tagInputParametros)
+      return tagInputParametros
+    }
+    const criarBotaoExecutar = function(objeto) {
+      const tagBotaoExecutar = document.createElement("button") 
+      tagBotaoExecutar.textContent = "Executar"
+      tagBotaoExecutar.addEventListener("click", ()=> {
+        let nomeObjeto = objeto.nome
+        let nomeClasse = objeto.classe.nome
+        let parametros = document.getElementById(`parametros-metodo-${objeto.classe.nome}-${objeto.nome}`).value
+        let nomeMetodo = document.getElementById(`select-metodo-${objeto.classe.nome}-${objeto.nome}`).value
+
+        let atributosObjeto = Object.values(objeto.atributos)
+        let tipoAtributos = objeto.classe.atributos.map(atributo => atributo.split(":")[1])
+        let atributosObjetoInicializacao = atributosObjeto.map(function(atributo, index) {
+          return tipoAtributos[index] == 'string' ? `"${atributo}"`: atributo
+        }).join(",")
+        let instanciacaoObjeto = `${nomeObjeto} = ${nomeClasse}(${atributosObjetoInicializacao})`
+        let execucaoMetodo = `${nomeObjeto}.${nomeMetodo}(${parametros})`
+
+        interpretarComPyodide(`${codigoFonte.trimEnd()}\n\n${instanciacaoObjeto}\n${execucaoMetodo}`)
+      })
+      return tagBotaoExecutar
+    }
+    const criarBotaoEditar = function(objeto) {
+      const tagBotaoEditarObjeto = document.createElement("button");
+      tagBotaoEditarObjeto.textContent = 'Editar';
+      tagBotaoEditarObjeto.addEventListener("click", () => abrirModalEditarObjeto(objeto));
+      return tagBotaoEditarObjeto
+    }
+    const criarBotaoExcluir = function(objeto) {
+      const tagBotaoExcluirObjeto = document.createElement("button");
+      tagBotaoExcluirObjeto.textContent = 'Excluir';
+      tagBotaoExcluirObjeto.addEventListener("click", () => excluirObjeto(objeto.nome));
+      return tagBotaoExcluirObjeto
+    }
+    const gerarRepresentacoesObjetos = function() {
       divObjetosContainer.innerHTML = '';
       objetos.forEach(objeto => {
-        const divObjeto = document.createElement("div");
-        divObjeto.className = "objeto";
-        divObjeto.id = `objeto-${objeto.nome.toLowerCase()}`;
-
-        const tagNomeObjeto = document.createElement("h4");
-        tagNomeObjeto.textContent = `${objeto.nome}: ${objeto.classe.nome}`;
-        divObjeto.appendChild(tagNomeObjeto);
-
-        const tagListaAtributos = document.createElement("pre");
-        tagListaAtributos.textContent = `Atributos:\n  ${Object.entries(objeto.atributos).map(([key, value]) => `${key}: ${value}`).join("\n  ")}`;
-        divObjeto.appendChild(tagListaAtributos);
-
-        const tagListaMetodos = document.createElement("select")
-        tagListaMetodos.id = `select-metodo-${objeto.classe.nome}-${objeto.nome}`
-        objeto.classe.metodos.forEach((metodo, index) => {
-          const tagOption = document.createElement("option")
-          let texto = metodo.replace("def ","").replaceAll(" ","")
-          texto = texto.substring(0,texto.indexOf(":"))
-          tagOption.textContent = texto
-          tagOption.value = texto.substring(0, texto.indexOf("("))
-          tagListaMetodos.appendChild(tagOption)
-        })
-        divObjeto.appendChild(tagListaMetodos)
-        
-        const tagInputParametros = document.createElement("input")
-        tagInputParametros.id = `parametros-metodo-${objeto.classe.nome}-${objeto.nome}`
-        tagInputParametros.placeholder = "Exemplo: 10,\"Olá\""
-        divObjeto.appendChild(tagInputParametros)
-
-        const tagBotaoExecutar = document.createElement("button") 
-        tagBotaoExecutar.textContent = "Executar"
-        tagBotaoExecutar.addEventListener("click", ()=> {
-          let nomeObjeto = objeto.nome
-          let nomeClasse = objeto.classe.nome
-          let parametros = document.getElementById(`parametros-metodo-${objeto.classe.nome}-${objeto.nome}`).value
-          let nomeMetodo = document.getElementById(`select-metodo-${objeto.classe.nome}-${objeto.nome}`).value
-          let atributosObjeto = Object.values(objeto.atributos).join(",")
-          compilarComPyodide(`${codigoFonte.trimEnd()}\n${nomeObjeto} = ${objeto.classe.nome}(${atributosObjeto})\nprint("${nomeMetodo}")\n${nomeObjeto}.${nomeMetodo}(${parametros})`)
-        })
-
-        divObjeto.appendChild(tagBotaoExecutar)
-
-        const tagBotaoEditarObjeto = document.createElement("button");
-        tagBotaoEditarObjeto.textContent = 'Editar';
-        tagBotaoEditarObjeto.addEventListener("click", () => abrirModalEditarObjeto(objeto));
-        divObjeto.appendChild(tagBotaoEditarObjeto);
-
-        // Botão de exclusão
-        const tagBotaoExcluirObjeto = document.createElement("button");
-        tagBotaoExcluirObjeto.textContent = 'Excluir';
-        tagBotaoExcluirObjeto.addEventListener("click", () => excluirObjeto(objeto.nome));
-        divObjeto.appendChild(tagBotaoExcluirObjeto);
+        const divObjeto = criarDivObjeto(objeto)
+        divObjeto.appendChild(criarTagNomeObjeto(objeto)) // Cria elemento com nome de objeto concatenado com nome de classe
+        divObjeto.appendChild(criarTagListaAtributos(objeto)) // Cria elemento com
+        divObjeto.appendChild(criarTagListaMetodos(objeto)) // Cria elemento com
+        divObjeto.appendChild(criarTagInputParametros(objeto)) // Cria elemento para entrada de parâmetros de método a ser executado
+        divObjeto.appendChild(criarBotaoExecutar(objeto)) // Cria botao para executar metodo de objeto
+        divObjeto.appendChild(criarBotaoEditar(objeto)) // Cria botao para editar objeto
+        divObjeto.appendChild(criarBotaoExcluir(objeto)) // Cria botao para excluir objeto
 
         divObjetosContainer.appendChild(divObjeto);
       });
@@ -369,40 +402,61 @@
         return objeto;
       });
 
-      atualizarListaObjetos();
-      exibirCodigoPython();
+      gerarRepresentacoesObjetos();
       modalEditarObjeto.style.display = "none";
     };
 
     const excluirObjeto = function(nomeObjeto) {
       objetos = objetos.filter(obj => obj.nome !== nomeObjeto); // Remove o objeto do array
-      atualizarListaObjetos();
-      exibirCodigoPython();
+      gerarRepresentacoesObjetos()
     };
 
     const fecharModal = function(modal) {
       modal.style.display = "none";
     };
 
-    const criarObjeto = function(classe) {
-      const nomeObjeto = document.getElementById("nome-objeto").value;
-      const atributosValores = {};
-
-      classe.atributos.forEach(atributo => {
-        const [nomeAtributo] = atributo.split(":");
-        const valor = document.querySelector(`input[name="${nomeAtributo}"]`).value;
-        atributosValores[nomeAtributo] = valor;
-      });
-
+    const criarObjeto = function(classe, nomeObjeto, valoresAtributos) {
       if (validarNomeObjeto(nomeObjeto))  {
-        const novoObjeto = { nome: nomeObjeto, classe: classe, atributos: atributosValores };
+        const novoObjeto = { nome: nomeObjeto, classe: classe, atributos: valoresAtributos };
         objetos.push(novoObjeto);
-        atualizarListaObjetos();
-        exibirCodigoPython();
+        gerarRepresentacoesObjetos();
         document.getElementById("nome-objeto").value = "";
         document.getElementsByClassName("botao-fechar")[1].click();
       }
     };
+
+    const validarNomeClasse = function(nomeClasse) {
+      const expressaoRegularNome = /^[A-Z][a-zA-Z0-9_]*$/
+      if (nomeClasse.length === 0) {
+        alert("O nome da classe é obrigatório.");
+        return false;
+      } else if (!expressaoRegularNome.test(nomeClasse)) {
+        alert("O nome da nova classe deve iniciar com letra maiúscula.");
+        return false;
+      } else { 
+        return true;
+      }
+    }
+
+    const tratarAtributosClasse = function(atributosClasse) {
+      const expressaoRegularAtributos = /^(?:\s*|\s*(\w+:\s*(string|int))(?:;\s*(\w+:\s*(string|int)))*\s*)$/;
+      return atributosClasse.length > 0 && expressaoRegularAtributos.test(atributosClasse)
+        ? atributosClasse.split(";").map(atributo => atributo.replaceAll(" ", "")) 
+        : []
+    }
+
+    const tratarMetodosClasse = function(metodosClasse) {
+      const expressaoRegularMetodos = /^def\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(([^()]*)\):\s*(#[^\n]*)?(\n\s+.*)?$/gm
+      return metodosClasse.length > 0 && expressaoRegularMetodos.test(metodosClasse)
+        ? metodosClasse.split("\ndef").map(metodo => metodo.indexOf("def") == -1 ? "def" + metodo : metodo) 
+        : []
+    }
+
+    const zerarAtributosModalNovaClasse = function() {
+      document.getElementById("nome-classe").value = "";
+      document.getElementById("nome-atributos").value = "";
+      document.getElementById("metodos-classe").value = "";
+    }
 
     const criarClasse = function() {
       const nomeClasse = document.getElementById("nome-classe").value;
@@ -410,15 +464,14 @@
       const metodosClasse = document.getElementById("metodos-classe").value;
 
       if(validarNomeClasse(nomeClasse)) {
-        const novaClasse = {
+        let novaClasse = {
           nome: nomeClasse,
           atributos: tratarAtributosClasse(atributosClasse),
-          metodos: metodosClasse.split("\ndef").map(metodo => metodo.indexOf("def") == -1 ? "def" + metodo : metodo)
+          metodos: tratarMetodosClasse(metodosClasse)
         };
 
-        atualizarListaClasses(novaClasse);
-        atualizarCodigoFonte();
-        exibirCodigoPython();
+        classes.push(novaClasse)
+        gerarRepresentacaoClasses(novaClasse);
 
         zerarAtributosModalNovaClasse()
         document.getElementsByClassName("botao-fechar")[0].click();
@@ -430,7 +483,10 @@
     });
 
     buttonNovaClasse.addEventListener('click', () => document.getElementById("modal-classe").style.display = "block");
-    buttonCompilar.addEventListener('click', () => compilarComPyodide());
+    buttonCompilar.addEventListener('click', () => {
+      
+      interpretarComPyodide()
+    });
     
     buttonCriarClasse.onclick = criarClasse;
   </script>
