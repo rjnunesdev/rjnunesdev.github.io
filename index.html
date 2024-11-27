@@ -141,8 +141,11 @@
               case "IndentationError":
                 avaliacao = "Erro de indentação";
                 break;
+              case "OSError":
+                avaliacao = "Erro de Sistema Operacional";
+                break;
               default:
-                avaliacao = "Erro desconhecido";
+                avaliacao = `${type} - ("Erro desconhecido")`;
                 break;
             }
           }
