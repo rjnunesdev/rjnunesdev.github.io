@@ -116,17 +116,14 @@
     const interpretarComPyodide = (codigo) => {
       estaCompilando = true;
       divSaida.innerHTML = `<h3>Saída</h3><pre>Compilando...</pre>`;
-      console.log(codigo)
-      
-      gerarCodigoFonte();
-      exibirCodigoPython();
 
+      gerarCodigoFonte()      
       loadPyodide().then(pyodide => {
         let avaliacao = '';
         let codigoTeste = codigo == null || codigo == undefined ? codigoFonte : codigo
         try {
-          avaliacao = "Código compilado com sucesso";
           saida = pyodide.runPython(codigoTeste);
+          avaliacao = "Código compilado com sucesso";
         } catch (erro) {
           if (erro.name === "PythonError") {
             saida = erro;
@@ -171,12 +168,13 @@
       let metodosIndentados = indentacao + classe.metodos.map(metodo => metodo.replaceAll("\n", `\n${indentacao}`)).join(`\n${indentacao}`)
       let cabecalho = `class ${classe.nome}:`
       let metodoConstrutor = gerarConstrutorClasse(classe.atributos)
-      const codigoClasse = `${cabecalhoClasse}\n${metodoConstrutor}\n${metodosIndentados}\n`;
+      const codigoClasse = `${cabecalho}\n${metodoConstrutor}\n${metodosIndentados}\n`;
       return codigoClasse;
     };
 
     const gerarCodigoFonte = function() {
       codigoFonte = classes.map(classe => gerarCodigoFonteClasse(classe)).join("\n");
+      exibirCodigoPython()
     }
 
     const exibirCodigoPython = function() {
@@ -309,7 +307,6 @@
       const tagInputParametros = document.createElement("input")
       tagInputParametros.id = `parametros-metodo-${objeto.classe.nome}-${objeto.nome}`
       tagInputParametros.placeholder = "Exemplo: 10,\"Olá\""
-      divObjeto.appendChild(tagInputParametros)
       return tagInputParametros
     }
     const criarBotaoExecutar = function(objeto) {
