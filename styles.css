@@ -1,8 +1,13 @@
+:root {
+  --box-shadow-container: inset -1px -1px 4px 0px rgba(0, 0, 0, 0.15), inset 1px -1px 2px 0px rgba(0, 0, 0, 0.15), inset -1px 1px 2px 0px rgba(0, 0, 0, 0.15), 0px 0px 2px 0px rgba(0, 0, 0, 0.15);
+}
+
 body {
   /* background-color: rgb(52, 54, 54); */
   margin: 0;
   padding: 0;
   height: 100vh;
+  font-family: 'Roboto';
 }
 div {
   border: 1px solid black;
@@ -35,6 +40,11 @@ h4 {
   flex-grow: 2;
   max-height: 40vh;
 }
+
+.container {
+  border: none;
+  box-shadow: var(--box-shadow-container);
+}
 #acoes {
   min-width: 100px;
   align-items: flex-start;
@@ -43,6 +53,16 @@ h4 {
 #acoes > * {
   width: 100%;
   padding: 5px;
+}
+#acoes > button {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+#acoes > button > svg {
+  height: 35px;
+  width: 35px;
 }
 h3{
   margin-block-start: 0 ;

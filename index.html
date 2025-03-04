@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css?family=Roboto:100,200,300,regular,500,600,700,800,900,100italic,200italic,300italic,italic,500italic,600italic,700italic,800italic,900italic" rel="stylesheet" />
+
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
 
   <title>GAPy</title>
@@ -12,28 +15,34 @@
   <div id="center">
     <label for="sub1" style="font-weight:800; padding: 10px; font-size: 30px;width: fit-content; right: 50%; left: 50%; position: relative;">GAPy</label>
     <div id="sub1">
-      <div id="acoes">
-        <h3>Açoes</h3>
-        <button id="botao-nova-classe">Nova classe...</button>
-        <button id="botao-compilar">Gerar código</button>
+      <div id="acoes" class="container">
+        <h3>Ações</h3>
+        <button id="botao-nova-classe">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg> 
+          <span>Nova classe</span>
+        </button>
+        <button id="botao-compilar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M314-115q-104-48-169-145T80-479q0-26 2.5-51t8.5-49l-46 27-40-69 191-110 110 190-70 40-54-94q-11 27-16.5 56t-5.5 60q0 97 53 176.5T354-185l-40 70Zm306-485v-80h109q-46-57-111-88.5T480-800q-55 0-104 17t-90 48l-40-70q50-35 109-55t125-20q79 0 151 29.5T760-765v-55h80v220H620ZM594 0 403-110l110-190 69 40-57 98q118-17 196.5-107T800-480q0-11-.5-20.5T797-520h81q1 10 1.5 19.5t.5 20.5q0 135-80.5 241.5T590-95l44 26-40 69Z"/></svg>
+          <span>Gerar código</span>
+        </button>
       </div>
-      <div id="classes">
+      <div id="classes" class="container">
         <h3>Classes</h3>
         <div id="container-classes"></div>
       </div>
-      <div id="codigo">
+      <div id="codigo" class="container">
         <h3>Código</h3>
         <pre></pre>
       </div>
     </div>
     <div id="sub2">
-      <div id="objetos">
+      <div id="objetos" class="container">
         <h3>Objetos</h3>
         <div id="objetos-container"></div>
       </div>
-      <div id="saida">
+      <div id="saida" class="container">
         <h3>Saída</h3>
-        <pre></pre>
+        <pre id="saida-container"></pre>
       </div>
     </div>
     <a href="https://github.com/rjnunesdev/rjnunesdev.github.io">Link Repositorio</a>
