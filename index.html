@@ -17,14 +17,16 @@
     <div id="sub1">
       <div id="acoes" class="container">
         <h3>Ações</h3>
-        <button id="botao-nova-classe">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg> 
-          <span>Nova classe</span>
-        </button>
-        <button id="botao-compilar">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M314-115q-104-48-169-145T80-479q0-26 2.5-51t8.5-49l-46 27-40-69 191-110 110 190-70 40-54-94q-11 27-16.5 56t-5.5 60q0 97 53 176.5T354-185l-40 70Zm306-485v-80h109q-46-57-111-88.5T480-800q-55 0-104 17t-90 48l-40-70q50-35 109-55t125-20q79 0 151 29.5T760-765v-55h80v220H620ZM594 0 403-110l110-190 69 40-57 98q118-17 196.5-107T800-480q0-11-.5-20.5T797-520h81q1 10 1.5 19.5t.5 20.5q0 135-80.5 241.5T590-95l44 26-40 69Z"/></svg>
-          <span>Gerar código</span>
-        </button>
+        <div id="container-acoes">
+          <button id="botao-nova-classe">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg> 
+            <span>Nova classe</span>
+          </button>
+          <button id="botao-compilar">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M314-115q-104-48-169-145T80-479q0-26 2.5-51t8.5-49l-46 27-40-69 191-110 110 190-70 40-54-94q-11 27-16.5 56t-5.5 60q0 97 53 176.5T354-185l-40 70Zm306-485v-80h109q-46-57-111-88.5T480-800q-55 0-104 17t-90 48l-40-70q50-35 109-55t125-20q79 0 151 29.5T760-765v-55h80v220H620ZM594 0 403-110l110-190 69 40-57 98q118-17 196.5-107T800-480q0-11-.5-20.5T797-520h81q1 10 1.5 19.5t.5 20.5q0 135-80.5 241.5T590-95l44 26-40 69Z"/></svg>
+            <span>Gerar código</span>
+          </button>
+        </div>
       </div>
       <div id="classes" class="container">
         <h3>Classes</h3>
@@ -32,7 +34,9 @@
       </div>
       <div id="codigo" class="container">
         <h3>Código</h3>
-        <pre></pre>
+        <!-- <div id="container-codigo"> -->
+          <pre></pre>
+        <!-- </div> -->
       </div>
     </div>
     <div id="sub2">
@@ -42,7 +46,7 @@
       </div>
       <div id="saida" class="container">
         <h3>Saída</h3>
-        <pre id="saida-container"></pre>
+        <pre id="container-saida"></pre>
       </div>
     </div>
     <a href="https://github.com/rjnunesdev/rjnunesdev.github.io">Link Repositorio</a>
@@ -194,35 +198,46 @@
     };
 
     const abrirModalCriarObjeto = function(classe) {
-      atributosObjeto.innerHTML = ''; // Limpa atributos antes de adicionar novos
-
+      atributosObjeto.innerHTML = '';
       classe.atributos.forEach(atributo => {
-        const divAtributo = document.createElement("div");
-        const [nomeAtributo, tipoAtributo] = atributo.replaceAll(" ","").split(":");
-        const labelAtributo = document.createElement("label");
-        const inputAtributo = document.createElement("input");
-        inputAtributo.placeholder = tipoAtributo;
-        labelAtributo.for = "atributo-"+nomeAtributo
-        labelAtributo.textContent = nomeAtributo+": "
-        inputAtributo.id = "atributo-"+nomeAtributo
+        const divAtributo = document.createElement('div');
+        const [nomeAtributo, tipoAtributo] = atributo.replaceAll(' ','').split(':');
+        const labelAtributo = document.createElement('label');
+        labelAtributo.for = 'atributo-' + nomeAtributo;
+        labelAtributo.textContent = nomeAtributo + ': ';
+        // Verifica se tipoAtributo é uma classe criada
+        const classeTipo = classes.find(c => c.nome === tipoAtributo);
+        let inputAtributo;
+        if (classeTipo) {
+          // Se for tipo personalizado, cria um select com objetos existentes desse tipo
+          inputAtributo = document.createElement('select');
+          objetos.filter(obj => obj.classe.nome === tipoAtributo).forEach(obj => {
+            const option = document.createElement('option');
+            option.value = obj.nome;
+            option.textContent = obj.nome;
+            inputAtributo.appendChild(option);
+          });
+        } else {
+          // Tipo primitivo
+          inputAtributo = document.createElement('input');
+          inputAtributo.placeholder = tipoAtributo;
+        }
+        inputAtributo.id = 'atributo-' + nomeAtributo;
         inputAtributo.name = nomeAtributo;
-        divAtributo.appendChild(labelAtributo)
+        divAtributo.appendChild(labelAtributo);
         divAtributo.appendChild(inputAtributo);
         atributosObjeto.appendChild(divAtributo);
       });
-
-      modalObjeto.style.display = "block";
-      
-      document.getElementById("botao-criar-objeto").onclick = () => {
-        let nomeObjeto = document.getElementById("nome-objeto").value;
+      modalObjeto.style.display = 'block';
+      document.getElementById('botao-criar-objeto').onclick = () => {
+        let nomeObjeto = document.getElementById('nome-objeto').value;
         const valoresAtributos = {};
-
         classe.atributos.forEach(atributo => {
-          const [nomeAtributo] = atributo.split(":");
-          const valor = document.querySelector(`input[name="${nomeAtributo}"]`).value;
+          const [nomeAtributo] = atributo.split(':');
+          const valor = document.querySelector(`[name="${nomeAtributo}"]`).value;
           valoresAtributos[nomeAtributo] = valor;
         });
-        criarObjeto(classe, nomeObjeto, valoresAtributos)
+        criarObjeto(classe, nomeObjeto, valoresAtributos);
       };
     };
 
@@ -448,9 +463,10 @@
     }
 
     const tratarAtributosClasse = function(atributosClasse) {
-      const expressaoRegularAtributos = /^(?:\s*|\s*(\w+:\s*(string|int))(?:;\s*(\w+:\s*(string|int)))*\s*)$/;
+      // Aceita tipos string, int ou qualquer nome de classe (começando com maiúscula)
+      const expressaoRegularAtributos = /^(?:\s*|\s*(\w+:\s*([A-Z][a-zA-Z0-9_]*|int|string))(?:;\s*(\w+:\s*([A-Z][a-zA-Z0-9_]*|int|string)))*\s*)$/;
       return atributosClasse.length > 0 && expressaoRegularAtributos.test(atributosClasse)
-        ? atributosClasse.split(";").map(atributo => atributo.replaceAll(" ", "")) 
+        ? atributosClasse.split(';').map(atributo => atributo.replaceAll(' ', '')) 
         : []
     }
 
