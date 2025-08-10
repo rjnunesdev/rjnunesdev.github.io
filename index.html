@@ -61,8 +61,9 @@
         <input type="text" id="nome-classe" name="nome-classe" placeholder="Exemplo: TesteTesteTeste">
       </div>
       <div>
-        <label for="nome-atributos">Atributos</label>
-        <input type="text" id="nome-atributos" name="nome-atributos" placeholder="Exemplo: nome: string; idade: int">
+        <label>Atributos</label>
+        <div id="atributos-lista"></div>
+        <button type="button" id="adicionar-atributo">Adicionar atributo</button>
       </div>
       <div>
         <label for="metodos-classe">Métodos</label>
@@ -205,37 +206,99 @@
         const labelAtributo = document.createElement('label');
         labelAtributo.for = 'atributo-' + nomeAtributo;
         labelAtributo.textContent = nomeAtributo + ': ';
-        // Verifica se tipoAtributo é uma classe criada
-        const classeTipo = classes.find(c => c.nome === tipoAtributo);
         let inputAtributo;
-        if (classeTipo) {
-          // Se for tipo personalizado, cria um select com objetos existentes desse tipo
-          inputAtributo = document.createElement('select');
-          objetos.filter(obj => obj.classe.nome === tipoAtributo).forEach(obj => {
-            const option = document.createElement('option');
-            option.value = obj.nome;
-            option.textContent = obj.nome;
-            inputAtributo.appendChild(option);
-          });
+        // Verifica se é lista
+        const listaMatch = tipoAtributo.match(/^list<(.+)>$/);
+        if (listaMatch) {
+          // Campo para múltiplos valores
+          const tipoLista = listaMatch[1];
+          const containerLista = document.createElement('div');
+          containerLista.style.display = 'flex';
+          containerLista.style.flexDirection = 'column';
+          containerLista.style.gap = '5px';
+          containerLista.id = 'container-lista-' + nomeAtributo;
+          // Função para criar campo de item
+          function criarCampoItemLista(valor = '') {
+            let campo;
+            // Se tipoLista for tipo personalizado, select de objetos
+            const classeTipo = classes.find(c => c.nome === tipoLista);
+            if (classeTipo) {
+              campo = document.createElement('select');
+              objetos.filter(obj => obj.classe.nome === tipoLista).forEach(obj => {
+                const option = document.createElement('option');
+                option.value = obj.nome;
+                option.textContent = obj.nome;
+                if (valor && valor === obj.nome) option.selected = true;
+                campo.appendChild(option);
+              });
+            } else {
+              campo = document.createElement('input');
+              campo.placeholder = tipoLista;
+              campo.value = valor;
+            }
+            campo.name = nomeAtributo + '-item';
+            campo.style.marginRight = '5px';
+            // Botão remover
+            const btnRemover = document.createElement('button');
+            btnRemover.type = 'button';
+            btnRemover.textContent = '-';
+            btnRemover.onclick = () => campoDiv.remove();
+            const campoDiv = document.createElement('div');
+            campoDiv.style.display = 'flex';
+            campoDiv.style.alignItems = 'center';
+            campoDiv.appendChild(campo);
+            campoDiv.appendChild(btnRemover);
+            containerLista.appendChild(campoDiv);
+          }
+          // Botão adicionar item
+          const btnAdicionar = document.createElement('button');
+          btnAdicionar.type = 'button';
+          btnAdicionar.textContent = '+ Adicionar';
+          btnAdicionar.onclick = () => criarCampoItemLista();
+          // Adiciona um campo inicial
+          criarCampoItemLista();
+          divAtributo.appendChild(labelAtributo);
+          divAtributo.appendChild(containerLista);
+          divAtributo.appendChild(btnAdicionar);
+          atributosObjeto.appendChild(divAtributo);
         } else {
-          // Tipo primitivo
-          inputAtributo = document.createElement('input');
-          inputAtributo.placeholder = tipoAtributo;
+          // Não é lista
+          // Verifica se tipoAtributo é uma classe criada
+          const classeTipo = classes.find(c => c.nome === tipoAtributo);
+          if (classeTipo) {
+            inputAtributo = document.createElement('select');
+            objetos.filter(obj => obj.classe.nome === tipoAtributo).forEach(obj => {
+              const option = document.createElement('option');
+              option.value = obj.nome;
+              option.textContent = obj.nome;
+              inputAtributo.appendChild(option);
+            });
+          } else {
+            inputAtributo = document.createElement('input');
+            inputAtributo.placeholder = tipoAtributo;
+          }
+          inputAtributo.id = 'atributo-' + nomeAtributo;
+          inputAtributo.name = nomeAtributo;
+          divAtributo.appendChild(labelAtributo);
+          divAtributo.appendChild(inputAtributo);
+          atributosObjeto.appendChild(divAtributo);
         }
-        inputAtributo.id = 'atributo-' + nomeAtributo;
-        inputAtributo.name = nomeAtributo;
-        divAtributo.appendChild(labelAtributo);
-        divAtributo.appendChild(inputAtributo);
-        atributosObjeto.appendChild(divAtributo);
       });
       modalObjeto.style.display = 'block';
       document.getElementById('botao-criar-objeto').onclick = () => {
         let nomeObjeto = document.getElementById('nome-objeto').value;
         const valoresAtributos = {};
         classe.atributos.forEach(atributo => {
-          const [nomeAtributo] = atributo.split(':');
-          const valor = document.querySelector(`[name="${nomeAtributo}"]`).value;
-          valoresAtributos[nomeAtributo] = valor;
+          const [nomeAtributo, tipoAtributo] = atributo.replaceAll(' ','').split(':');
+          const listaMatch = tipoAtributo.match(/^list<(.+)>$/);
+          if (listaMatch) {
+            // Coleta todos os campos de item
+            const campos = atributosObjeto.querySelectorAll(`[name="${nomeAtributo}-item"]`);
+            valoresAtributos[nomeAtributo] = Array.from(campos).map(c => c.value).filter(v => v !== '');
+          } else {
+            const valor = atributosObjeto.querySelector(`[name="${nomeAtributo}"]`).value;
+            valoresAtributos[nomeAtributo] = valor;
+          }
         });
         criarObjeto(classe, nomeObjeto, valoresAtributos);
       };
@@ -479,27 +542,31 @@
 
     const zerarAtributosModalNovaClasse = function() {
       document.getElementById("nome-classe").value = "";
-      document.getElementById("nome-atributos").value = "";
+      // document.getElementById("nome-atributos").value = "";
       document.getElementById("metodos-classe").value = "";
     }
 
     const criarClasse = function() {
       const nomeClasse = document.getElementById("nome-classe").value;
-      const atributosClasse = document.getElementById("nome-atributos").value;
+      // Coleta atributos dos campos dinâmicos
+      const atributos = Array.from(atributosLista.children).map(div => {
+        const nome = div.querySelector('input').value.trim();
+        const tipo = div.querySelector('select').value;
+        return nome && tipo ? `${nome}:${tipo}` : null;
+      }).filter(Boolean);
       const metodosClasse = document.getElementById("metodos-classe").value;
 
       if(validarNomeClasse(nomeClasse)) {
         let novaClasse = {
           nome: nomeClasse,
-          atributos: tratarAtributosClasse(atributosClasse),
+          atributos: atributos,
           metodos: tratarMetodosClasse(metodosClasse)
         };
-
         classes.push(novaClasse)
         gerarRepresentacaoClasses(novaClasse);
-
         zerarAtributosModalNovaClasse()
         document.getElementsByClassName("botao-fechar")[0].click();
+        modalClasse.style.display = "none";
       }
     };
 
@@ -514,6 +581,67 @@
     });
     
     buttonCriarClasse.onclick = criarClasse;
+
+    // Adição dinâmica de atributos
+    const atributosLista = document.getElementById('atributos-lista');
+    const buttonAdicionarAtributo = document.getElementById('adicionar-atributo');
+
+    function getTiposDisponiveis() {
+      // Tipos primitivos, tipos personalizados e listas
+      const tiposBase = ['string', 'int'];
+      const tiposPersonalizados = classes.map(c => c.nome);
+      const tiposLista = tiposBase.concat(tiposPersonalizados).map(t => `list<${t}>`);
+      return [...tiposBase, ...tiposPersonalizados, ...tiposLista];
+    }
+
+    function criarCampoAtributo(nome = '', tipo = 'string') {
+      const div = document.createElement('div');
+      div.style.display = 'flex';
+      div.style.gap = '5px';
+      div.style.marginBottom = '5px';
+
+      const inputNome = document.createElement('input');
+      inputNome.type = 'text';
+      inputNome.placeholder = 'nome';
+      inputNome.value = nome;
+      inputNome.style.flex = '2';
+
+      const selectTipo = document.createElement('select');
+      getTiposDisponiveis().forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        if (t === tipo) opt.selected = true;
+        selectTipo.appendChild(opt);
+      });
+      selectTipo.style.flex = '1';
+
+      const btnRemover = document.createElement('button');
+      btnRemover.type = 'button';
+      btnRemover.textContent = 'Remover';
+      btnRemover.onclick = () => div.remove();
+
+      div.appendChild(inputNome);
+      div.appendChild(selectTipo);
+      div.appendChild(btnRemover);
+      atributosLista.appendChild(div);
+    }
+
+    buttonAdicionarAtributo.onclick = () => criarCampoAtributo();
+
+    // Ao abrir o modal, limpa e adiciona um campo atributo vazio
+    const modalClasse = document.getElementById('modal-classe');
+    modalClasse.addEventListener('show', () => {
+      atributosLista.innerHTML = '';
+      criarCampoAtributo();
+    });
+
+    // Ao abrir modal, dispara evento 'show'
+    document.getElementById('botao-nova-classe').addEventListener('click', () => {
+      const event = new Event('show');
+      modalClasse.dispatchEvent(event);
+      modalClasse.style.display = 'block';
+    });
   </script>
 </body>
 </html>

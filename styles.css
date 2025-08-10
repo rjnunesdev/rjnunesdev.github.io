@@ -155,65 +155,113 @@ h3{
 }
 /* Modal Content */
 .modal-conteudo {
-  background-color: #fefefe;
+  background-color: #fff;
   margin: auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  border: none;
+  width: 400px;
 }
 .modal-conteudo > div{
-  padding: 10px; 
+  padding: 8px 0;
   border: none;
 }
-
-#atributos-objeto > * {
-  margin-block: 5px;
-}
-
-.objeto > * {
-  display: flex;
-}
-.objeto > button {
-  display: inline;
-}
-.objeto > select {
-  width: 100%;
-  margin-bottom: 10px;
-}
-.objeto > input {
-  margin-bottom: 10px;
-}
-
 .modal-conteudo > div > * {
-  font-size: 20px;
-  line-height: 1.5;
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 400;
 }
-
 .modal-conteudo > div > input {
   width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 16px;
+  background: #fafafa;
+  margin-top: 4px;
 }
-
 .modal-conteudo > button {
-  margin:10px; 
-  padding: 10px; 
-  font-size: 20px;
-  line-height: 1.5;
+  margin: 16px 0 0 0;
+  padding: 10px 0;
+  font-size: 17px;
+  line-height: 1.4;
+  background: #1f7aec;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
 }
-
+.modal-conteudo > button:hover {
+  background: #155bb5;
+}
 .botao-fechar {
-  color: #cf0808;
+  color: #888;
   float: right;
-  font-size: 35px;
+  font-size: 28px;
   font-weight: bold;
-  margin-top: -20px;
-  margin-right: -12px;
+  margin-top: -12px;
+  margin-right: -8px;
+  cursor: pointer;
 }
-
 .botao-fechar:hover,
 .botao-fechar:focus{
-  color: #000;
+  color: #1f7aec;
   text-decoration: none;
   cursor: pointer;
+}
+#atributos-objeto > * {
+  margin-block: 8px;
+  padding: 0;
+}
+/* Lista de itens no modal de objeto */
+.container-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.container-lista > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.container-lista input, .container-lista select {
+  flex: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 15px;
+  background: #fafafa;
+}
+.container-lista button {
+  background: #e0e0e0;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: background 0.2s;
+}
+.container-lista button:hover {
+  background: #d0d0d0;
+}
+.btn-adicionar-lista {
+  background: #1f7aec;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s;
+}
+.btn-adicionar-lista:hover {
+  background: #155bb5;
 }
 /* Scroll width */
 ::-webkit-scrollbar {
